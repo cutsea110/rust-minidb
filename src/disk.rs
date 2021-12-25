@@ -55,7 +55,7 @@ impl DiskManagerDao for DiskManager {
 
 pub mod memory {
     use std::fs::File;
-    use std::io::{Read, Result, Write};
+    use std::io::{Error, ErrorKind, Read, Result, Write};
     use std::path::Path;
     use std::vec::*;
 
@@ -70,18 +70,27 @@ pub mod memory {
         heap: Vec<[u8; PAGE_SIZE]>,
     }
 
-    impl DiskManagerDao for MemoryManager {
-        fn new(_: File) -> Result<Self> {
+    impl MemoryManager {
+        pub fn new_memory() -> Result<Self> {
             Ok(Self {
                 next_page_id: 0,
                 heap: vec![],
             })
         }
+    }
+
+    impl DiskManagerDao for MemoryManager {
+        fn new(_: File) -> Result<Self> {
+            Err(Error::new(
+                ErrorKind::Unsupported,
+                "this method is not supported.",
+            ))
+        }
         fn open(_: impl AsRef<Path>) -> Result<Self> {
-            Ok(Self {
-                next_page_id: 0,
-                heap: vec![],
-            })
+            Err(Error::new(
+                ErrorKind::Unsupported,
+                "this method is not supported.",
+            ))
         }
         fn allocate_page(&mut self) -> PageId {
             let page_id = self.next_page_id;
@@ -169,10 +178,8 @@ mod tests {
     fn test_memory_manager() {
         use super::dao::diskmanager::*;
         use super::memory::{MemoryManager, *};
-        use tempfile::NamedTempFile;
 
-        let (data_file, _data_file_path) = NamedTempFile::new().unwrap().into_parts();
-        let mut memory = MemoryManager::new(data_file).unwrap();
+        let mut memory = MemoryManager::new_memory().unwrap();
         let mut hello = Vec::with_capacity(PAGE_SIZE);
         hello.extend_from_slice(b"hello");
         hello.resize(PAGE_SIZE, 0);
