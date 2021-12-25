@@ -53,9 +53,47 @@ impl DiskManagerDao for DiskManager {
     }
 }
 
+pub mod mock {
+    use std::fs::File;
+    use std::io::Result;
+    use std::path::Path;
+
+    use super::dao::diskmanager::*;
+
+    pub struct Mock {
+        next_page_id: u64,
+    }
+
+    impl DiskManagerDao for Mock {
+        fn new(_: File) -> Result<Self>
+        where
+            Self: Sized,
+        {
+            Ok(Self { next_page_id: 0 })
+        }
+        fn open(_: impl AsRef<Path>) -> Result<Self>
+        where
+            Self: Sized,
+        {
+            Ok(Self { next_page_id: 0 })
+        }
+        fn allocate_page(&mut self) -> PageId {
+            let page_id = self.next_page_id;
+            self.next_page_id += 1;
+            PageId(page_id)
+        }
+        fn read_page_data(&mut self, _: PageId, _: &mut [u8]) -> Result<()> {
+            Ok(())
+        }
+        fn write_page_data(&mut self, _: PageId, _: &[u8]) -> Result<()> {
+            Ok(())
+        }
+    }
+}
+
 pub mod memory {
     use std::fs::File;
-    use std::io::{Error, ErrorKind, Read, Result, Write};
+    use std::io::{Read, Result, Write};
     use std::path::Path;
     use std::vec::*;
 
@@ -70,27 +108,18 @@ pub mod memory {
         heap: Vec<[u8; PAGE_SIZE]>,
     }
 
-    impl MemoryManager {
-        pub fn new_memory() -> Result<Self> {
+    impl DiskManagerDao for MemoryManager {
+        fn new(_: File) -> Result<Self> {
             Ok(Self {
                 next_page_id: 0,
                 heap: vec![],
             })
         }
-    }
-
-    impl DiskManagerDao for MemoryManager {
-        fn new(_: File) -> Result<Self> {
-            Err(Error::new(
-                ErrorKind::Unsupported,
-                "this method is not supported.",
-            ))
-        }
         fn open(_: impl AsRef<Path>) -> Result<Self> {
-            Err(Error::new(
-                ErrorKind::Unsupported,
-                "this method is not supported.",
-            ))
+            Ok(Self {
+                next_page_id: 0,
+                heap: vec![],
+            })
         }
         fn allocate_page(&mut self) -> PageId {
             let page_id = self.next_page_id;
@@ -178,8 +207,10 @@ mod tests {
     fn test_memory_manager() {
         use super::dao::diskmanager::*;
         use super::memory::{MemoryManager, *};
+        use tempfile::NamedTempFile;
 
-        let mut memory = MemoryManager::new_memory().unwrap();
+        let (data_file, _) = NamedTempFile::new().unwrap().into_parts();
+        let mut memory = MemoryManager::new(data_file).unwrap();
         let mut hello = Vec::with_capacity(PAGE_SIZE);
         hello.extend_from_slice(b"hello");
         hello.resize(PAGE_SIZE, 0);
