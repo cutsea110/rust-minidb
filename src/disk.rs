@@ -1,3 +1,37 @@
+pub mod dao {
+    pub mod diskmanager {
+        use std::fs::File;
+        use std::io::Result;
+        use std::path::Path;
+
+        #[derive(Debug, Clone, Copy, Eq, PartialEq)]
+        pub struct PageId(pub u64);
+        impl PageId {
+            pub fn to_u64(self) -> u64 {
+                self.0
+            }
+        }
+
+        pub trait DiskManagerDao {
+            // コンストラクタ
+            fn new(heap_file: File) -> Result<Self>
+            where
+                Self: Sized;
+            // ファイルパスを指定して開く
+            fn open(heap_file_path: impl AsRef<Path>) -> Result<Self>
+            where
+                Self: Sized;
+
+            // 新しいページIDを採番する
+            fn allocate_page(&mut self) -> PageId;
+            // ページのデータを読み出す
+            fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()>;
+            // データをページに書き出す
+            fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()>;
+        }
+    }
+}
+
 pub mod disk {
     use std::fs::{File, OpenOptions};
     use std::io::{self, prelude::*, SeekFrom};
@@ -139,40 +173,6 @@ pub mod memory {
             let mut row: &mut [u8] = self.heap[page_id.0 as usize].as_bytes_mut();
             row.write_all(buf)?;
             Ok(())
-        }
-    }
-}
-
-pub mod dao {
-    pub mod diskmanager {
-        use std::fs::File;
-        use std::io::Result;
-        use std::path::Path;
-
-        #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-        pub struct PageId(pub u64);
-        impl PageId {
-            pub fn to_u64(self) -> u64 {
-                self.0
-            }
-        }
-
-        pub trait DiskManagerDao {
-            // コンストラクタ
-            fn new(heap_file: File) -> Result<Self>
-            where
-                Self: Sized;
-            // ファイルパスを指定して開く
-            fn open(heap_file_path: impl AsRef<Path>) -> Result<Self>
-            where
-                Self: Sized;
-
-            // 新しいページIDを採番する
-            fn allocate_page(&mut self) -> PageId;
-            // ページのデータを読み出す
-            fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()>;
-            // データをページに書き出す
-            fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()>;
         }
     }
 }
