@@ -53,31 +53,51 @@ impl DiskManagerDao for DiskManager {
     }
 }
 
-pub mod mock {
+pub mod memory {
     use std::fs::File;
-    use std::io::{Read, Result};
+    use std::io::{Read, Result, Write};
     use std::path::Path;
+    use std::vec::*;
+
+    use zerocopy::AsBytes;
 
     use super::dao::diskmanager::*;
 
-    pub struct MockDiskManager {}
+    const PAGE_SIZE: usize = 4096;
 
-    impl DiskManagerDao for MockDiskManager {
+    pub struct MemoryManager {
+        next_page_id: u64,
+        heap: Vec<[u8; PAGE_SIZE]>,
+    }
+
+    impl DiskManagerDao for MemoryManager {
         fn new(_: File) -> Result<Self> {
-            Ok(Self {})
+            Ok(Self {
+                next_page_id: 0,
+                heap: vec![],
+            })
         }
         fn open(_: impl AsRef<Path>) -> Result<Self> {
-            Ok(Self {})
+            Ok(Self {
+                next_page_id: 0,
+                heap: vec![],
+            })
         }
         fn allocate_page(&mut self) -> PageId {
-            PageId(42)
+            let page_id = self.next_page_id;
+            self.next_page_id += 1;
+            self.heap.push([0; PAGE_SIZE]);
+            PageId(page_id)
         }
-        fn read_page_data(&mut self, _: PageId, data: &mut [u8]) -> Result<()> {
-            let mut hello: &[u8] = b"The quick brown fox jumps over the lazy dog";
-            hello.read_exact(data)?;
+        fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()> {
+            let mut row: &[u8] = self.heap[page_id.0 as usize].as_bytes();
+            row.read_exact(data)?;
             Ok(())
         }
-        fn write_page_data(&mut self, _: PageId, _: &[u8]) -> Result<()> {
+        fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()> {
+            let buf: &[u8] = data.as_bytes();
+            let mut row: &mut [u8] = self.heap[page_id.0 as usize].as_bytes_mut();
+            row.write_all(buf)?;
             Ok(())
         }
     }
@@ -89,6 +109,7 @@ pub mod dao {
         use std::io::Result;
         use std::path::Path;
 
+        #[derive(Debug, Clone, Copy, Eq, PartialEq)]
         pub struct PageId(pub u64);
         impl PageId {
             pub fn to_u64(self) -> u64 {
@@ -113,5 +134,34 @@ pub mod dao {
             // データをページに書き出す
             fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()>;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::NamedTempFile;
+
+    #[test]
+    fn test() {
+        let (data_file, data_file_path) = NamedTempFile::new().unwrap().into_parts();
+        let mut disk = DiskManager::new(data_file).unwrap();
+        let mut hello = Vec::with_capacity(PAGE_SIZE);
+        hello.extend_from_slice(b"hello");
+        hello.resize(PAGE_SIZE, 0);
+        let hello_page_id = disk.allocate_page();
+        disk.write_page_data(hello_page_id, &hello).unwrap();
+        let mut world = Vec::with_capacity(PAGE_SIZE);
+        world.extend_from_slice(b"world");
+        world.resize(PAGE_SIZE, 0);
+        let world_page_id = disk.allocate_page();
+        disk.write_page_data(world_page_id, &world).unwrap();
+        drop(disk);
+        let mut disk2 = DiskManager::open(&data_file_path).unwrap();
+        let mut buf = vec![0; PAGE_SIZE];
+        disk2.read_page_data(hello_page_id, &mut buf).unwrap();
+        assert_eq!(hello, buf);
+        disk2.read_page_data(world_page_id, &mut buf).unwrap();
+        assert_eq!(world, buf);
     }
 }
