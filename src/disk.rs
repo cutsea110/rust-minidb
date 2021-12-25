@@ -34,7 +34,7 @@ pub mod dao {
 
 pub mod disk {
     use std::fs::{File, OpenOptions};
-    use std::io::{self, prelude::*, SeekFrom};
+    use std::io::{prelude::*, Result, SeekFrom};
     use std::path::Path;
 
     use super::dao::diskmanager::*;
@@ -49,7 +49,7 @@ pub mod disk {
     }
 
     impl DiskManagerDao for DiskManager {
-        fn new(heap_file: File) -> io::Result<Self> {
+        fn new(heap_file: File) -> Result<Self> {
             let heap_file_size = heap_file.metadata()?.len();
             let next_page_id = heap_file_size / PAGE_SIZE as u64;
             Ok(Self {
@@ -57,7 +57,7 @@ pub mod disk {
                 next_page_id,
             })
         }
-        fn open(heap_file_path: impl AsRef<Path>) -> io::Result<Self> {
+        fn open(heap_file_path: impl AsRef<Path>) -> Result<Self> {
             let heap_file = OpenOptions::new()
                 .read(true)
                 .write(true)
@@ -70,7 +70,7 @@ pub mod disk {
             self.next_page_id += 1;
             PageId(page_id)
         }
-        fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> io::Result<()> {
+        fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()> {
             // オフセットを計算
             let offset = PAGE_SIZE as u64 * page_id.to_u64();
             // ページ先頭へシーク
@@ -78,7 +78,7 @@ pub mod disk {
             // データを読み出す
             self.heap_file.read_exact(data)
         }
-        fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> io::Result<()> {
+        fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()> {
             // オフセットを計算
             let offset = PAGE_SIZE as u64 * page_id.to_u64();
             // ページ先頭へシーク
