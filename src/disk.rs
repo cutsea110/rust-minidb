@@ -29,6 +29,11 @@ pub mod dao {
             // データをページに書き出す
             fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()>;
         }
+
+        pub trait HaveDiskManager {
+            type DiskManagerDao: DiskManagerDao;
+            fn disk_manager_dao(&self) -> Self::DiskManagerDao;
+        }
     }
 }
 
