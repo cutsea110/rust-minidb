@@ -36,6 +36,8 @@ pub mod dao {
             fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()>;
             // データをページに書き出す
             fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()>;
+            // 同期処理
+            fn sync(&mut self) -> Result<()>;
         }
 
         pub trait HaveDiskManager {
@@ -99,6 +101,10 @@ pub mod disk {
             // データを書きこむ
             self.heap_file.write_all(data)
         }
+        fn sync(&mut self) -> Result<()> {
+            self.heap_file.flush()?;
+            self.heap_file.sync_all()
+        }
     }
 }
 
@@ -135,6 +141,9 @@ pub mod mock {
             Ok(())
         }
         fn write_page_data(&mut self, _: PageId, _: &[u8]) -> Result<()> {
+            Ok(())
+        }
+        fn sync(&mut self) -> Result<()> {
             Ok(())
         }
     }
@@ -185,6 +194,9 @@ pub mod memory {
             let buf: &[u8] = data.as_bytes();
             let mut row: &mut [u8] = self.heap[page_id.0 as usize].as_bytes_mut();
             row.write_all(buf)?;
+            Ok(())
+        }
+        fn sync(&mut self) -> Result<()> {
             Ok(())
         }
     }
