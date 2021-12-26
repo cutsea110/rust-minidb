@@ -181,3 +181,53 @@ impl BufferPoolManager {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempfile;
+
+    #[test]
+    fn test() {
+        let mut hello = Vec::with_capacity(PAGE_SIZE);
+        hello.extend_from_slice(b"hello");
+        hello.resize(PAGE_SIZE, 0);
+        let mut world = Vec::with_capacity(PAGE_SIZE);
+        world.extend_from_slice(b"world");
+        world.resize(PAGE_SIZE, 0);
+
+        let disk = DiskManager::new(tempfile().unwrap()).unwrap();
+        let pool = BufferPool::new(1);
+        let mut bufmgr = BufferPoolManager::new(disk, pool);
+        let page1_id = {
+            let buffer = bufmgr.create_page().unwrap();
+            assert!(bufmgr.create_page().is_err());
+            let mut page = buffer.page.borrow_mut();
+            page.copy_from_slice(&hello);
+            buffer.is_dirty.set(true);
+            buffer.page_id
+        };
+        {
+            let buffer = bufmgr.fetch_page(page1_id).unwrap();
+            let page = buffer.page.borrow();
+            assert_eq!(&hello, page.as_ref());
+        }
+        let page2_id = {
+            let buffer = bufmgr.create_page().unwrap();
+            let mut page = buffer.page.borrow_mut();
+            page.copy_from_slice(&world);
+            buffer.is_dirty.set(true);
+            buffer.page_id
+        };
+        {
+            let buffer = bufmgr.fetch_page(page1_id).unwrap();
+            let page = buffer.page.borrow();
+            assert_eq!(&hello, page.as_ref());
+        }
+        {
+            let buffer = bufmgr.fetch_page(page2_id).unwrap();
+            let page = buffer.page.borrow();
+            assert_eq!(&world, page.as_ref());
+        }
+    }
+}
