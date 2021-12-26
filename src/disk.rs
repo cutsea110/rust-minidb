@@ -1,8 +1,6 @@
 pub mod dao {
     pub mod diskmanager {
-        use std::fs::File;
         use std::io::Result;
-        use std::path::Path;
 
         #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
         pub struct PageId(pub u64);
@@ -21,15 +19,6 @@ pub mod dao {
         }
 
         pub trait DiskManagerDao {
-            // コンストラクタ
-            fn new(heap_file: File) -> Result<Self>
-            where
-                Self: Sized;
-            // ファイルパスを指定して開く
-            fn open(heap_file_path: impl AsRef<Path>) -> Result<Self>
-            where
-                Self: Sized;
-
             // 新しいページIDを採番する
             fn allocate_page(&mut self) -> PageId;
             // ページのデータを読み出す
@@ -63,8 +52,8 @@ pub mod disk {
         next_page_id: u64,
     }
 
-    impl DiskManagerDao for DiskManager {
-        fn new(heap_file: File) -> Result<Self> {
+    impl DiskManager {
+        pub fn new(heap_file: File) -> Result<Self> {
             let heap_file_size = heap_file.metadata()?.len();
             let next_page_id = heap_file_size / PAGE_SIZE as u64;
             Ok(Self {
@@ -72,7 +61,8 @@ pub mod disk {
                 next_page_id,
             })
         }
-        fn open(heap_file_path: impl AsRef<Path>) -> Result<Self> {
+
+        pub fn open(heap_file_path: impl AsRef<Path>) -> Result<Self> {
             let heap_file = OpenOptions::new()
                 .read(true)
                 .write(true)
@@ -80,6 +70,9 @@ pub mod disk {
                 .open(heap_file_path)?;
             Self::new(heap_file)
         }
+    }
+
+    impl DiskManagerDao for DiskManager {
         fn allocate_page(&mut self) -> PageId {
             let page_id = self.next_page_id;
             self.next_page_id += 1;
@@ -139,9 +132,7 @@ pub mod disk {
 }
 
 pub mod mock {
-    use std::fs::File;
     use std::io::Result;
-    use std::path::Path;
 
     use super::dao::diskmanager::*;
 
@@ -149,19 +140,16 @@ pub mod mock {
         next_page_id: u64,
     }
 
+    impl Mock {
+        pub fn new() -> Result<Self>
+        where
+            Self: Sized,
+        {
+            Ok(Self { next_page_id: 0 })
+        }
+    }
+
     impl DiskManagerDao for Mock {
-        fn new(_: File) -> Result<Self>
-        where
-            Self: Sized,
-        {
-            Ok(Self { next_page_id: 0 })
-        }
-        fn open(_: impl AsRef<Path>) -> Result<Self>
-        where
-            Self: Sized,
-        {
-            Ok(Self { next_page_id: 0 })
-        }
         fn allocate_page(&mut self) -> PageId {
             let page_id = self.next_page_id;
             self.next_page_id += 1;
@@ -180,9 +168,7 @@ pub mod mock {
 }
 
 pub mod memory {
-    use std::fs::File;
     use std::io::{Read, Result, Write};
-    use std::path::Path;
     use std::vec::*;
 
     use zerocopy::AsBytes;
@@ -196,19 +182,16 @@ pub mod memory {
         heap: Vec<[u8; PAGE_SIZE]>,
     }
 
+    impl MemoryManager {
+        pub fn new() -> Result<Self> {
+            Ok(Self {
+                next_page_id: 0,
+                heap: vec![],
+            })
+        }
+    }
+
     impl DiskManagerDao for MemoryManager {
-        fn new(_: File) -> Result<Self> {
-            Ok(Self {
-                next_page_id: 0,
-                heap: vec![],
-            })
-        }
-        fn open(_: impl AsRef<Path>) -> Result<Self> {
-            Ok(Self {
-                next_page_id: 0,
-                heap: vec![],
-            })
-        }
         fn allocate_page(&mut self) -> PageId {
             let page_id = self.next_page_id;
             self.next_page_id += 1;
@@ -237,10 +220,8 @@ pub mod memory {
         fn test() {
             use super::super::dao::diskmanager::*;
             use super::{MemoryManager, *};
-            use tempfile::NamedTempFile;
 
-            let (data_file, _) = NamedTempFile::new().unwrap().into_parts();
-            let mut memory = MemoryManager::new(data_file).unwrap();
+            let mut memory = MemoryManager::new().unwrap();
             let mut hello = Vec::with_capacity(PAGE_SIZE);
             hello.extend_from_slice(b"hello");
             hello.resize(PAGE_SIZE, 0);
