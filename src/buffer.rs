@@ -20,14 +20,34 @@ pub mod dao {
             }
         }
     }
+
+    pub mod buffermanager {
+        use crate::buffer::dao::entity::Buffer;
+        use crate::disk::dao::entity::PageId;
+        use std::io;
+        use std::rc::Rc;
+
+        #[derive(Debug, thiserror::Error)]
+        pub enum Error {
+            #[error(transparent)]
+            Io(#[from] io::Error),
+            #[error("no free buffer available in buffer pool")]
+            NoFreeBuffer,
+        }
+
+        pub trait BufferPoolManagerDao<T> {
+            fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer<T>>, Error>;
+            fn create_page(&mut self) -> Result<Rc<Buffer<T>>, Error>;
+            fn flush(&mut self) -> Result<(), Error>;
+        }
+    }
 }
 
 use std::collections::HashMap;
-use std::io;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::rc::Rc;
 
-use crate::buffer::dao::entity::Buffer;
+use crate::buffer::dao::{buffermanager::*, entity::Buffer};
 use crate::disk::dao::{diskmanager::*, entity::PageId};
 use crate::disk::disk::*;
 
@@ -96,6 +116,7 @@ impl<T: Default> BufferPool<T> {
         self.buffers.len()
     }
 
+    // Clock-sweep
     fn evict(&mut self) -> Option<BufferId> {
         let pool_size = self.size();
         let mut consecutive_pinned = 0;
@@ -130,22 +151,6 @@ pub struct BufferPoolManager {
     page_table: HashMap<PageId, BufferId>,
 }
 
-impl HaveDiskManager for BufferPoolManager {
-    type DiskManagerDao = DiskManager;
-
-    fn disk(&mut self) -> &mut Self::DiskManagerDao {
-        &mut self.disk
-    }
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error(transparent)]
-    Io(#[from] io::Error),
-    #[error("no free buffer available in buffer pool")]
-    NoFreeBuffer,
-}
-
 impl BufferPoolManager {
     pub fn new(disk: DiskManager, pool: BufferPool<Page>) -> Self {
         let page_table = HashMap::new();
@@ -155,8 +160,10 @@ impl BufferPoolManager {
             page_table,
         }
     }
+}
 
-    pub fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer<Page>>, Error> {
+impl BufferPoolManagerDao<Page> for BufferPoolManager {
+    fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer<Page>>, Error> {
         if let Some(&buffer_id) = self.page_table.get(&page_id) {
             let frame = &mut self.pool[buffer_id];
             frame.usage_count += 1;
@@ -182,7 +189,7 @@ impl BufferPoolManager {
         Ok(page)
     }
 
-    pub fn create_page(&mut self) -> Result<Rc<Buffer<Page>>, Error> {
+    fn create_page(&mut self) -> Result<Rc<Buffer<Page>>, Error> {
         let buffer_id = self.pool.evict().ok_or(Error::NoFreeBuffer)?;
         let frame = &mut self.pool[buffer_id];
         let evict_page_id = frame.buffer.page_id;
@@ -206,7 +213,7 @@ impl BufferPoolManager {
         Ok(page)
     }
 
-    pub fn flush(&mut self) -> Result<(), Error> {
+    fn flush(&mut self) -> Result<(), Error> {
         for (&page_id, &buffer_id) in self.page_table.iter() {
             let frame = &self.pool[buffer_id];
             let mut page = frame.buffer.page.borrow_mut();

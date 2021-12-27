@@ -33,12 +33,6 @@ pub mod dao {
             // 同期処理
             fn sync(&mut self) -> Result<()>;
         }
-
-        pub trait HaveDiskManager {
-            type DiskManagerDao: DiskManagerDao;
-
-            fn disk(&mut self) -> &mut Self::DiskManagerDao;
-        }
     }
 }
 
