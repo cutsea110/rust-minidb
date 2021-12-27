@@ -1,52 +1,9 @@
-pub mod dao {
-    pub mod entity {
-        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-        pub struct PageId(pub u64);
-        impl PageId {
-            pub const INVALID_PAGE_ID: PageId = PageId(u64::MAX);
-
-            pub fn to_u64(self) -> u64 {
-                self.0
-            }
-        }
-
-        impl Default for PageId {
-            fn default() -> Self {
-                Self::INVALID_PAGE_ID
-            }
-        }
-    }
-
-    pub mod diskmanager {
-        use super::entity::PageId;
-
-        use std::io::Result;
-
-        pub trait DiskManagerDao {
-            // 新しいページIDを採番する
-            fn allocate_page(&mut self) -> PageId;
-            // ページのデータを読み出す
-            fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()>;
-            // データをページに書き出す
-            fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()>;
-            // 同期処理
-            fn sync(&mut self) -> Result<()>;
-        }
-
-        pub trait HaveDiskManager {
-            type DiskManagerDao: DiskManagerDao;
-
-            fn disk(&mut self) -> &mut Self::DiskManagerDao;
-        }
-    }
-}
-
 pub mod disk {
     use std::fs::{File, OpenOptions};
     use std::io::{prelude::*, Result, SeekFrom};
     use std::path::Path;
 
-    use super::dao::{diskmanager::*, entity::PageId};
+    use crate::dao::{diskmanager::*, entity::PageId};
 
     pub const PAGE_SIZE: usize = 4096;
 
@@ -109,7 +66,6 @@ pub mod disk {
     mod tests {
         #[test]
         fn test() {
-            use super::super::dao::diskmanager::*;
             use super::{DiskManager, *};
             use tempfile::NamedTempFile;
 
@@ -139,7 +95,7 @@ pub mod disk {
 pub mod mock {
     use std::io::Result;
 
-    use super::dao::{diskmanager::*, entity::PageId};
+    use crate::dao::{diskmanager::*, entity::PageId};
 
     pub struct Mock {
         next_page_id: u64,
@@ -178,7 +134,7 @@ pub mod memory {
 
     use zerocopy::AsBytes;
 
-    use super::dao::{diskmanager::*, entity::PageId};
+    use crate::dao::{diskmanager::*, entity::PageId};
 
     pub const PAGE_SIZE: usize = 4096;
 
@@ -223,7 +179,6 @@ pub mod memory {
     mod tests {
         #[test]
         fn test() {
-            use super::super::dao::diskmanager::*;
             use super::{MemoryManager, *};
 
             let mut memory = MemoryManager::new().unwrap();
