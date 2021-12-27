@@ -10,7 +10,10 @@ pub mod dao {
             pub is_dirty: Cell<bool>,
         }
 
-        impl<T: Default> Default for Buffer<T> {
+        impl<T> Default for Buffer<T>
+        where
+            T: Default,
+        {
             fn default() -> Self {
                 Self {
                     page_id: Default::default(),
@@ -102,7 +105,10 @@ pub mod simple {
         }
     }
 
-    impl<T: Default> BufferPool<T> {
+    impl<T> BufferPool<T>
+    where
+        T: Default,
+    {
         pub fn new(pool_size: usize) -> Self {
             let mut buffers = vec![];
             buffers.resize_with(pool_size, Default::default);
@@ -146,13 +152,19 @@ pub mod simple {
         }
     }
 
-    pub struct BufferPoolManager<T: DiskManagerDao> {
+    pub struct BufferPoolManager<T>
+    where
+        T: DiskManagerDao,
+    {
         disk: T,
         pool: BufferPool<Page>,
         page_table: HashMap<PageId, BufferId>,
     }
 
-    impl<T: DiskManagerDao> BufferPoolManager<T> {
+    impl<T> BufferPoolManager<T>
+    where
+        T: DiskManagerDao,
+    {
         pub fn new(disk: T, pool: BufferPool<Page>) -> Self {
             let page_table = HashMap::new();
             Self {
@@ -163,7 +175,10 @@ pub mod simple {
         }
     }
 
-    impl<T: DiskManagerDao> BufferPoolManagerDao<Page> for BufferPoolManager<T> {
+    impl<T> BufferPoolManagerDao<Page> for BufferPoolManager<T>
+    where
+        T: DiskManagerDao,
+    {
         fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer<Page>>, Error> {
             if let Some(&buffer_id) = self.page_table.get(&page_id) {
                 let frame = &mut self.pool[buffer_id];
