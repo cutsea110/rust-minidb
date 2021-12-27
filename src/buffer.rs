@@ -102,6 +102,14 @@ pub struct BufferPoolManager {
     page_table: HashMap<PageId, BufferId>,
 }
 
+impl HaveDiskManager for BufferPoolManager {
+    type DiskManagerDao = DiskManager;
+
+    fn disk(&mut self) -> &mut Self::DiskManagerDao {
+        &mut self.disk
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
