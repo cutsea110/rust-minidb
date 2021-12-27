@@ -53,7 +53,7 @@ pub mod simple {
 
     use crate::buffer::dao::{buffermanager::*, entity::Buffer};
     use crate::disk::dao::{diskmanager::*, entity::PageId};
-    use crate::disk::disk::*;
+    use crate::disk::disk::PAGE_SIZE; // TODO: これに依存したくない。Page は diskmanager にあるべき?
 
     #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
     pub struct BufferId(usize);
