@@ -4,7 +4,7 @@ use std::io;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::rc::Rc;
 
-use crate::dao::{diskmanager::*, entity::PageId};
+use crate::disk::dao::{diskmanager::*, entity::PageId};
 use crate::disk::disk::*;
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]

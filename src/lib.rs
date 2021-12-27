@@ -1,7 +1,6 @@
 mod bsearch;
 pub mod buffer;
 // pub mod btree;
-pub mod dao;
 pub mod disk;
 // mod slotted;
 // pub mod tuple;
