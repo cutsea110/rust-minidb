@@ -1,5 +1,6 @@
 pub mod entity {
     #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+    #[repr(C)]
     pub struct PageId(pub u64);
     impl PageId {
         pub const INVALID_PAGE_ID: PageId = PageId(u64::MAX);
