@@ -31,7 +31,8 @@ pub mod dao {
 
         pub trait HaveDiskManager {
             type DiskManagerDao: DiskManagerDao;
-            fn disk_manager_dao(&self) -> Self::DiskManagerDao;
+
+            fn disk_manager_dao(&mut self) -> &mut Self::DiskManagerDao;
         }
     }
 }
