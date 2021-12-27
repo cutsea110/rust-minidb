@@ -1,7 +1,5 @@
 pub mod dao {
-    pub mod diskmanager {
-        use std::io::Result;
-
+    pub mod entity {
         #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
         pub struct PageId(pub u64);
         impl PageId {
@@ -17,6 +15,12 @@ pub mod dao {
                 Self::INVALID_PAGE_ID
             }
         }
+    }
+
+    pub mod diskmanager {
+        use super::entity::PageId;
+
+        use std::io::Result;
 
         pub trait DiskManagerDao {
             // 新しいページIDを採番する
@@ -42,7 +46,7 @@ pub mod disk {
     use std::io::{prelude::*, Result, SeekFrom};
     use std::path::Path;
 
-    use super::dao::diskmanager::*;
+    use super::dao::{diskmanager::*, entity::PageId};
 
     pub const PAGE_SIZE: usize = 4096;
 
@@ -135,7 +139,7 @@ pub mod disk {
 pub mod mock {
     use std::io::Result;
 
-    use super::dao::diskmanager::*;
+    use super::dao::{diskmanager::*, entity::PageId};
 
     pub struct Mock {
         next_page_id: u64,
@@ -174,7 +178,7 @@ pub mod memory {
 
     use zerocopy::AsBytes;
 
-    use super::dao::diskmanager::*;
+    use super::dao::{diskmanager::*, entity::PageId};
 
     pub const PAGE_SIZE: usize = 4096;
 
