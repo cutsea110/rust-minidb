@@ -1,9 +1,33 @@
-use std::cell::{Cell, RefCell};
+pub mod dao {
+    pub mod entity {
+        use crate::disk::dao::entity::PageId;
+        use std::cell::{Cell, RefCell};
+
+        #[derive(Debug)]
+        pub struct Buffer<T> {
+            pub page_id: PageId,
+            pub page: RefCell<T>,
+            pub is_dirty: Cell<bool>,
+        }
+
+        impl<T: Default> Default for Buffer<T> {
+            fn default() -> Self {
+                Self {
+                    page_id: Default::default(),
+                    page: RefCell::new(T::default()),
+                    is_dirty: Cell::new(false),
+                }
+            }
+        }
+    }
+}
+
 use std::collections::HashMap;
 use std::io;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::rc::Rc;
 
+use crate::buffer::dao::entity::Buffer;
 use crate::disk::dao::{diskmanager::*, entity::PageId};
 use crate::disk::disk::*;
 
@@ -30,23 +54,6 @@ impl Deref for Page {
 impl DerefMut for Page {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.bytes
-    }
-}
-
-#[derive(Debug)]
-pub struct Buffer<T> {
-    pub page_id: PageId,
-    pub page: RefCell<T>,
-    pub is_dirty: Cell<bool>,
-}
-
-impl<T: Default> Default for Buffer<T> {
-    fn default() -> Self {
-        Self {
-            page_id: Default::default(),
-            page: RefCell::new(T::default()),
-            is_dirty: Cell::new(false),
-        }
     }
 }
 
