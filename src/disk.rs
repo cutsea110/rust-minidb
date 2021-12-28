@@ -1,6 +1,8 @@
 pub mod dao {
     pub mod entity {
-        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+        use zerocopy::{AsBytes, FromBytes};
+
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromBytes, AsBytes)]
         #[repr(C)]
         pub struct PageId(pub u64);
         impl PageId {
