@@ -3,21 +3,22 @@ pub mod dao {
         use crate::disk::dao::entity::PageId;
         use std::cell::{Cell, RefCell};
 
+        pub const PAGE_SIZE: usize = 4096;
+
+        pub type Page = [u8; PAGE_SIZE];
+
         #[derive(Debug)]
-        pub struct Buffer<T> {
+        pub struct Buffer {
             pub page_id: PageId,
-            pub page: RefCell<T>,
+            pub page: RefCell<Page>,
             pub is_dirty: Cell<bool>,
         }
 
-        impl<T> Default for Buffer<T>
-        where
-            T: Default,
-        {
+        impl Default for Buffer {
             fn default() -> Self {
                 Self {
                     page_id: Default::default(),
-                    page: RefCell::new(T::default()),
+                    page: RefCell::new([0u8; PAGE_SIZE]),
                     is_dirty: Cell::new(false),
                 }
             }
@@ -38,9 +39,9 @@ pub mod dao {
             NoFreeBuffer,
         }
 
-        pub trait BufferPoolManagerDao<T> {
-            fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer<T>>, Error>;
-            fn create_page(&mut self) -> Result<Rc<Buffer<T>>, Error>;
+        pub trait BufferPoolManagerDao {
+            fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error>;
+            fn create_page(&mut self) -> Result<Rc<Buffer>, Error>;
             fn flush(&mut self) -> Result<(), Error>;
         }
     }
@@ -48,67 +49,40 @@ pub mod dao {
 
 pub mod simple {
     use std::collections::HashMap;
-    use std::ops::{Deref, DerefMut, Index, IndexMut};
+    use std::ops::{Index, IndexMut};
     use std::rc::Rc;
 
     use crate::buffer::dao::{buffermanager::*, entity::Buffer};
     use crate::disk::dao::{diskmanager::*, entity::PageId};
-    use crate::disk::disk::PAGE_SIZE; // TODO: これに依存したくない。Page は diskmanager にあるべき?
 
     #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
     pub struct BufferId(usize);
 
-    pub struct Page {
-        bytes: [u8; PAGE_SIZE],
-    }
-    impl Default for Page {
-        fn default() -> Self {
-            Self {
-                bytes: [0u8; PAGE_SIZE],
-            }
-        }
-    }
-    impl Deref for Page {
-        type Target = [u8];
-
-        fn deref(&self) -> &Self::Target {
-            &self.bytes
-        }
-    }
-    impl DerefMut for Page {
-        fn deref_mut(&mut self) -> &mut Self::Target {
-            &mut self.bytes
-        }
-    }
-
     #[derive(Debug, Default)]
-    pub struct Frame<T> {
+    pub struct Frame {
         usage_count: u64,
-        buffer: Rc<Buffer<T>>,
+        buffer: Rc<Buffer>,
     }
 
-    pub struct BufferPool<T> {
-        buffers: Vec<Frame<T>>,
+    pub struct BufferPool {
+        buffers: Vec<Frame>,
         next_victim_id: BufferId,
     }
 
-    impl<T> Index<BufferId> for BufferPool<T> {
-        type Output = Frame<T>;
+    impl Index<BufferId> for BufferPool {
+        type Output = Frame;
         fn index(&self, index: BufferId) -> &Self::Output {
             &self.buffers[index.0]
         }
     }
 
-    impl<T> IndexMut<BufferId> for BufferPool<T> {
+    impl IndexMut<BufferId> for BufferPool {
         fn index_mut(&mut self, index: BufferId) -> &mut Self::Output {
             &mut self.buffers[index.0]
         }
     }
 
-    impl<T> BufferPool<T>
-    where
-        T: Default,
-    {
+    impl BufferPool {
         pub fn new(pool_size: usize) -> Self {
             let mut buffers = vec![];
             buffers.resize_with(pool_size, Default::default);
@@ -157,7 +131,7 @@ pub mod simple {
         T: DiskManagerDao,
     {
         disk: T,
-        pool: BufferPool<Page>,
+        pool: BufferPool,
         page_table: HashMap<PageId, BufferId>,
     }
 
@@ -165,7 +139,7 @@ pub mod simple {
     where
         T: DiskManagerDao,
     {
-        pub fn new(disk: T, pool: BufferPool<Page>) -> Self {
+        pub fn new(disk: T, pool: BufferPool) -> Self {
             let page_table = HashMap::new();
             Self {
                 disk,
@@ -175,11 +149,11 @@ pub mod simple {
         }
     }
 
-    impl<T> BufferPoolManagerDao<Page> for BufferPoolManager<T>
+    impl<T> BufferPoolManagerDao for BufferPoolManager<T>
     where
         T: DiskManagerDao,
     {
-        fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer<Page>>, Error> {
+        fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
             if let Some(&buffer_id) = self.page_table.get(&page_id) {
                 let frame = &mut self.pool[buffer_id];
                 frame.usage_count += 1;
@@ -205,7 +179,7 @@ pub mod simple {
             Ok(page)
         }
 
-        fn create_page(&mut self) -> Result<Rc<Buffer<Page>>, Error> {
+        fn create_page(&mut self) -> Result<Rc<Buffer>, Error> {
             let buffer_id = self.pool.evict().ok_or(Error::NoFreeBuffer)?;
             let frame = &mut self.pool[buffer_id];
             let evict_page_id = frame.buffer.page_id;
