@@ -216,14 +216,14 @@ pub mod simple {
     }
 
     #[cfg(test)]
-    mod tests {
+    mod tests_with_disk {
         use super::{BufferPool, BufferPoolManager};
         use crate::buffer::dao::buffermanager::*;
         use crate::disk::disk::{self, DiskManager};
         use tempfile::tempfile;
 
         #[test]
-        fn test_with_disk() {
+        fn test() {
             let mut hello = Vec::with_capacity(disk::PAGE_SIZE);
             hello.extend_from_slice(b"hello");
             hello.resize(disk::PAGE_SIZE, 0);
@@ -265,7 +265,12 @@ pub mod simple {
                 assert_eq!(&world, page.as_ref());
             }
         }
+    }
 
+    #[cfg(test)]
+    mod tests_with_memory {
+        use super::{BufferPool, BufferPoolManager};
+        use crate::buffer::dao::buffermanager::*;
         use crate::disk::memory::{self, MemoryManager};
 
         #[test]
