@@ -1,7 +1,7 @@
-mod bsearch;
-pub mod buffer;
-// pub mod btree;
 pub mod accessor;
+mod bsearch;
+pub mod btree;
+pub mod buffer;
 mod slotted;
 pub mod storage;
 // pub mod tuple;
