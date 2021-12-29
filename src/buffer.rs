@@ -1,4 +1,5 @@
-// buffer manager は dao で公開した I/F をサポートする diskmanager を使うことができる
+// buffermanager は dao で公開した I/F をサポートする diskmanager を使うことができる
 pub mod dao;
-// buffer manager の具体的な実装
+
+// Clock-sweek を使った buffer pool による buffermanager の具体的な実装
 pub mod simple; // 具体実装

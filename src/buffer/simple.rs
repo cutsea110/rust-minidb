@@ -166,104 +166,10 @@ where
 }
 
 #[cfg(test)]
-mod tests_with_disk {
-    use super::{BufferPool, BufferPoolManager};
-    use crate::accessor::dao::buffermanager::*;
-    use crate::storage::disk::{self, DiskManager};
-    use tempfile::tempfile;
+mod tests {
 
     #[test]
     fn test() {
-        let mut hello = Vec::with_capacity(disk::PAGE_SIZE);
-        hello.extend_from_slice(b"hello");
-        hello.resize(disk::PAGE_SIZE, 0);
-        let mut world = Vec::with_capacity(disk::PAGE_SIZE);
-        world.extend_from_slice(b"world");
-        world.resize(disk::PAGE_SIZE, 0);
-
-        let disk = DiskManager::new(tempfile().unwrap()).unwrap();
-        let pool = BufferPool::new(1);
-        let mut bufmgr = BufferPoolManager::new(disk, pool);
-        let page1_id = {
-            let buffer = bufmgr.create_page().unwrap();
-            assert!(bufmgr.create_page().is_err());
-            let mut page = buffer.page.borrow_mut();
-            page.copy_from_slice(&hello);
-            buffer.is_dirty.set(true);
-            buffer.page_id
-        };
-        {
-            let buffer = bufmgr.fetch_page(page1_id).unwrap();
-            let page = buffer.page.borrow();
-            assert_eq!(&hello, page.as_ref());
-        }
-        let page2_id = {
-            let buffer = bufmgr.create_page().unwrap();
-            let mut page = buffer.page.borrow_mut();
-            page.copy_from_slice(&world);
-            buffer.is_dirty.set(true);
-            buffer.page_id
-        };
-        {
-            let buffer = bufmgr.fetch_page(page1_id).unwrap();
-            let page = buffer.page.borrow();
-            assert_eq!(&hello, page.as_ref());
-        }
-        {
-            let buffer = bufmgr.fetch_page(page2_id).unwrap();
-            let page = buffer.page.borrow();
-            assert_eq!(&world, page.as_ref());
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests_with_memory {
-    use super::{BufferPool, BufferPoolManager};
-    use crate::accessor::dao::buffermanager::*;
-    use crate::storage::memory::{self, MemoryManager};
-
-    #[test]
-    fn test_with_memory() {
-        let mut hello = Vec::with_capacity(memory::PAGE_SIZE);
-        hello.extend_from_slice(b"hello");
-        hello.resize(memory::PAGE_SIZE, 0);
-        let mut world = Vec::with_capacity(memory::PAGE_SIZE);
-        world.extend_from_slice(b"world");
-        world.resize(memory::PAGE_SIZE, 0);
-
-        let memory = MemoryManager::new().unwrap();
-        let pool = BufferPool::new(1);
-        let mut bufmgr = BufferPoolManager::new(memory, pool);
-        let page1_id = {
-            let buffer = bufmgr.create_page().unwrap();
-            assert!(bufmgr.create_page().is_err());
-            let mut page = buffer.page.borrow_mut();
-            page.copy_from_slice(&hello);
-            buffer.is_dirty.set(true);
-            buffer.page_id
-        };
-        {
-            let buffer = bufmgr.fetch_page(page1_id).unwrap();
-            let page = buffer.page.borrow();
-            assert_eq!(&hello, page.as_ref());
-        }
-        let page2_id = {
-            let buffer = bufmgr.create_page().unwrap();
-            let mut page = buffer.page.borrow_mut();
-            page.copy_from_slice(&world);
-            buffer.is_dirty.set(true);
-            buffer.page_id
-        };
-        {
-            let buffer = bufmgr.fetch_page(page1_id).unwrap();
-            let page = buffer.page.borrow();
-            assert_eq!(&hello, page.as_ref());
-        }
-        {
-            let buffer = bufmgr.fetch_page(page2_id).unwrap();
-            let page = buffer.page.borrow();
-            assert_eq!(&world, page.as_ref());
-        }
+        // ここには diskmanager のモックを作って simple buffermanager のテストをする
     }
 }
