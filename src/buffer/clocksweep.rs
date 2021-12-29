@@ -164,6 +164,7 @@ mod tests {
     };
     use std::io::Result;
 
+    #[derive(Debug, PartialEq)]
     enum Op {
         Alloc(PageId),
         Read(PageId, [u8; PAGE_SIZE]),
@@ -179,7 +180,7 @@ mod tests {
     impl TraceStorage {
         fn new() -> Self {
             Self {
-                next_page_id: 0,
+                next_page_id: 1,
                 history: vec![],
             }
         }
@@ -214,7 +215,39 @@ mod tests {
     }
 
     #[test]
-    fn test() {
-        // ここには diskmanager のモックを作って simple buffermanager のテストをする
+    fn create_page_test() {
+        use super::*;
+
+        let mock = TraceStorage::new();
+        let pool = BufferPool::new(1);
+        let mut bufmgr = ClockSweepManager::new(mock, pool);
+        {
+            let res = bufmgr.create_page();
+            assert!(res.is_ok());
+            let buffer = res.unwrap();
+            assert_eq!(buffer.page_id, PageId(1));
+            // アロケート
+            assert_eq!(vec![Op::Alloc(PageId(1)),], bufmgr.disk.history);
+
+            let res_err = bufmgr.create_page();
+            assert!(res_err.is_err());
+            // 変化なし
+            assert_eq!(vec![Op::Alloc(PageId(1)),], bufmgr.disk.history);
+        }
+        {
+            let res = bufmgr.create_page();
+            assert!(res.is_ok());
+            let buffer = res.unwrap();
+            assert_eq!(buffer.page_id, PageId(2));
+            // Write & Allocate
+            assert_eq!(
+                vec![
+                    Op::Alloc(PageId(1)),
+                    Op::Write(PageId(1), [0u8; PAGE_SIZE]),
+                    Op::Alloc(PageId(2))
+                ],
+                bufmgr.disk.history
+            );
+        }
     }
 }
