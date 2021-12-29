@@ -2,9 +2,8 @@ use std::fs::{File, OpenOptions};
 use std::io::{prelude::*, Result, SeekFrom};
 use std::path::Path;
 
+use crate::accessor::dao::entity::PAGE_SIZE; // TODO: コンストラクタから貰いたい
 use crate::buffer::dao::{entity::PageId, storage::*};
-
-pub const PAGE_SIZE: usize = 4096;
 
 pub struct DiskManager {
     // ヒープファイルのファイルディスクリプタ

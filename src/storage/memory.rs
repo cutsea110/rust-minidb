@@ -3,9 +3,8 @@ use std::vec::*;
 
 use zerocopy::AsBytes;
 
+use crate::accessor::dao::entity::PAGE_SIZE; // TODO: コンストラクタから貰いたい
 use crate::buffer::dao::{entity::PageId, storage::*};
-
-pub const PAGE_SIZE: usize = 4096;
 
 pub struct MemoryManager {
     next_page_id: u64,
