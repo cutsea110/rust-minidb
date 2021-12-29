@@ -167,6 +167,25 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::buffer::dao::{diskmanager::DiskManagerDao, entity::PageId};
+    use std::io::Result;
+
+    struct MockStorage {}
+
+    impl DiskManagerDao for MockStorage {
+        fn allocate_page(&mut self) -> PageId {
+            panic!("TODO")
+        }
+        fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()> {
+            panic!("TODO")
+        }
+        fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()> {
+            panic!("TODO")
+        }
+        fn sync(&mut self) -> Result<()> {
+            Ok(())
+        }
+    }
 
     #[test]
     fn test() {
