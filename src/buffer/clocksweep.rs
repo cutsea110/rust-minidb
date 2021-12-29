@@ -226,12 +226,12 @@ mod tests {
             assert!(res.is_ok());
             let buffer = res.unwrap();
             assert_eq!(buffer.page_id, PageId(1));
-            // アロケート
+            // Allocate
             assert_eq!(vec![Op::Alloc(PageId(1)),], bufmgr.disk.history);
 
             let res_err = bufmgr.create_page();
             assert!(res_err.is_err());
-            // 変化なし
+            // no storage access
             assert_eq!(vec![Op::Alloc(PageId(1)),], bufmgr.disk.history);
         }
         {
@@ -245,6 +245,84 @@ mod tests {
                     Op::Alloc(PageId(1)),
                     Op::Write(PageId(1), [0u8; PAGE_SIZE]),
                     Op::Alloc(PageId(2))
+                ],
+                bufmgr.disk.history
+            );
+        }
+    }
+
+    #[test]
+    fn fetch_page_test() {
+        use super::*;
+
+        let mock = TraceStorage::new();
+        let pool = BufferPool::new(1);
+        let mut bufmgr = ClockSweepManager::new(mock, pool);
+        {
+            let res = bufmgr.fetch_page(PageId(1));
+            assert!(res.is_ok());
+            // Read
+            assert_eq!(
+                vec![Op::Read(PageId(1), [0u8; PAGE_SIZE]),],
+                bufmgr.disk.history
+            );
+
+            let res_same_page = bufmgr.fetch_page(PageId(1));
+            assert!(res_same_page.is_ok());
+            // no storage access(hit the cache)
+            assert_eq!(
+                vec![Op::Read(PageId(1), [0u8; PAGE_SIZE]),],
+                bufmgr.disk.history
+            );
+
+            let res_err = bufmgr.fetch_page(PageId(2));
+            assert!(res_err.is_err());
+            // no storage access
+            assert_eq!(
+                vec![Op::Read(PageId(1), [0u8; PAGE_SIZE]),],
+                bufmgr.disk.history
+            );
+        }
+        {
+            let res = bufmgr.fetch_page(PageId(2));
+            assert!(res.is_ok());
+            // Read * 2
+            assert_eq!(
+                vec![
+                    Op::Read(PageId(1), [0u8; PAGE_SIZE]),
+                    Op::Read(PageId(2), [0u8; PAGE_SIZE]),
+                ],
+                bufmgr.disk.history
+            );
+
+            // write page data
+            let buffer = res.unwrap();
+            let mut page = buffer.page.borrow_mut();
+            let all42 = [42u8; PAGE_SIZE];
+            page.copy_from_slice(&all42);
+            buffer.is_dirty.set(true);
+
+            let res_same_page = bufmgr.fetch_page(PageId(2));
+            assert!(res_same_page.is_ok());
+            // no storage access(hit the cache)
+            assert_eq!(
+                vec![
+                    Op::Read(PageId(1), [0u8; PAGE_SIZE]),
+                    Op::Read(PageId(2), [0u8; PAGE_SIZE]),
+                ],
+                bufmgr.disk.history
+            );
+        }
+        {
+            let res = bufmgr.fetch_page(PageId(1));
+            assert!(res.is_ok());
+            // Read * 2 & Write & Read
+            assert_eq!(
+                vec![
+                    Op::Read(PageId(1), [0u8; PAGE_SIZE]),
+                    Op::Read(PageId(2), [0u8; PAGE_SIZE]),
+                    Op::Write(PageId(2), [42u8; PAGE_SIZE]),
+                    Op::Read(PageId(1), [42u8; PAGE_SIZE]),
                 ],
                 bufmgr.disk.history
             );
