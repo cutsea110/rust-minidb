@@ -1,2 +1,2 @@
-pub mod buffermanager;
+pub mod bufferpool;
 pub mod entity;

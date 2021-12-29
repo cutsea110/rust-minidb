@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
-use crate::accessor::dao::{buffermanager::*, entity::Buffer};
+use crate::accessor::dao::{bufferpool::*, entity::Buffer};
 use crate::buffer::dao::{entity::PageId, storage::*};
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
