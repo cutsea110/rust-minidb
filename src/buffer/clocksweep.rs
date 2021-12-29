@@ -306,4 +306,53 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn flush_test() {
+        use super::*;
+
+        let mock = TraceStorage::new();
+        let pool = BufferPool::new(3);
+        let mut bufmgr = ClockSweepManager::new(mock, pool);
+        {
+            let res = bufmgr.flush();
+            assert!(res.is_ok());
+            assert_eq!(vec![Op::Sync], bufmgr.disk.history);
+        }
+        {
+            let _ = bufmgr.fetch_page(PageId(1));
+            assert_eq!(vec![Op::Sync, Op::Read(PageId(1))], bufmgr.disk.history);
+            let res = bufmgr.flush();
+            assert!(res.is_ok());
+            assert_eq!(
+                vec![
+                    Op::Sync,
+                    Op::Read(PageId(1)),
+                    Op::Write(PageId(1)),
+                    Op::Sync,
+                ],
+                bufmgr.disk.history
+            );
+        }
+        {
+            let _ = bufmgr.fetch_page(PageId(2));
+            let _ = bufmgr.fetch_page(PageId(3));
+            assert_eq!(
+                vec![
+                    Op::Sync,
+                    Op::Read(PageId(1)),
+                    Op::Write(PageId(1)),
+                    Op::Sync,
+                    Op::Read(PageId(2)),
+                    Op::Read(PageId(3)),
+                ],
+                bufmgr.disk.history
+            );
+            let res = bufmgr.flush();
+            assert!(res.is_ok());
+            // flush 操作が HashMap::iter() で順序が変わるのでログの数のみで確認
+            // ここまでの 6 レコードに buffer Write 3 つと Sync の 4 レコードが追加
+            assert_eq!(10, bufmgr.disk.history.len())
+        }
+    }
 }
