@@ -2,4 +2,4 @@
 pub mod dao;
 
 // Clock-sweek を使った buffer pool による buffermanager の具体的な実装
-pub mod simple;
+pub mod clocksweep;
