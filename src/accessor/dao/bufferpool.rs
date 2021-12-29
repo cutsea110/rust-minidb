@@ -12,7 +12,7 @@ pub enum Error {
     NoFreeBuffer,
 }
 
-pub trait BufferPoolManagerDao {
+pub trait BufferPoolManager {
     fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error>;
     fn create_page(&mut self) -> Result<Rc<Buffer>, Error>;
     fn flush(&mut self) -> Result<(), Error>;

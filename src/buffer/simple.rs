@@ -76,13 +76,13 @@ impl BufferPool {
     }
 }
 
-pub struct BufferPoolManager<T: StorageManager> {
+pub struct SimpleBufferPoolManager<T: StorageManager> {
     disk: T,
     pool: BufferPool,
     page_table: HashMap<PageId, BufferId>,
 }
 
-impl<T: StorageManager> BufferPoolManager<T> {
+impl<T: StorageManager> SimpleBufferPoolManager<T> {
     pub fn new(disk: T, pool: BufferPool) -> Self {
         let page_table = HashMap::new();
         Self {
@@ -93,7 +93,7 @@ impl<T: StorageManager> BufferPoolManager<T> {
     }
 }
 
-impl<T: StorageManager> BufferPoolManagerDao for BufferPoolManager<T> {
+impl<T: StorageManager> BufferPoolManager for SimpleBufferPoolManager<T> {
     fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
         if let Some(&buffer_id) = self.page_table.get(&page_id) {
             let frame = &mut self.pool[buffer_id];
