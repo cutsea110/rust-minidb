@@ -167,8 +167,8 @@ mod tests {
     #[derive(Debug, PartialEq)]
     enum Op {
         Alloc(PageId),
-        Read(PageId, [u8; PAGE_SIZE]),
-        Write(PageId, [u8; PAGE_SIZE]),
+        Read(PageId),
+        Write(PageId),
         Sync,
     }
 
@@ -190,22 +190,15 @@ mod tests {
         fn allocate_page(&mut self) -> PageId {
             let pid = PageId(self.next_page_id);
             self.next_page_id += 1;
-            let rec = Op::Alloc(pid);
-            self.history.push(rec);
+            self.history.push(Op::Alloc(pid));
             pid
         }
         fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()> {
-            let mut buf = [0u8; PAGE_SIZE];
-            buf.copy_from_slice(data);
-            let rec = Op::Read(page_id, buf);
-            self.history.push(rec);
+            self.history.push(Op::Read(page_id));
             Ok(())
         }
         fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()> {
-            let mut buf = [0u8; PAGE_SIZE];
-            buf.copy_from_slice(data);
-            let rec = Op::Write(page_id, buf);
-            self.history.push(rec);
+            self.history.push(Op::Write(page_id));
             Ok(())
         }
         fn sync(&mut self) -> Result<()> {
@@ -243,7 +236,7 @@ mod tests {
             assert_eq!(
                 vec![
                     Op::Alloc(PageId(1)),
-                    Op::Write(PageId(1), [0u8; PAGE_SIZE]),
+                    Op::Write(PageId(1)),
                     Op::Alloc(PageId(2))
                 ],
                 bufmgr.disk.history
@@ -262,36 +255,24 @@ mod tests {
             let res = bufmgr.fetch_page(PageId(1));
             assert!(res.is_ok());
             // Read
-            assert_eq!(
-                vec![Op::Read(PageId(1), [0u8; PAGE_SIZE]),],
-                bufmgr.disk.history
-            );
+            assert_eq!(vec![Op::Read(PageId(1)),], bufmgr.disk.history);
 
             let res_same_page = bufmgr.fetch_page(PageId(1));
             assert!(res_same_page.is_ok());
             // no storage access(hit the cache)
-            assert_eq!(
-                vec![Op::Read(PageId(1), [0u8; PAGE_SIZE]),],
-                bufmgr.disk.history
-            );
+            assert_eq!(vec![Op::Read(PageId(1)),], bufmgr.disk.history);
 
             let res_err = bufmgr.fetch_page(PageId(2));
             assert!(res_err.is_err());
             // no storage access
-            assert_eq!(
-                vec![Op::Read(PageId(1), [0u8; PAGE_SIZE]),],
-                bufmgr.disk.history
-            );
+            assert_eq!(vec![Op::Read(PageId(1)),], bufmgr.disk.history);
         }
         {
             let res = bufmgr.fetch_page(PageId(2));
             assert!(res.is_ok());
             // Read * 2
             assert_eq!(
-                vec![
-                    Op::Read(PageId(1), [0u8; PAGE_SIZE]),
-                    Op::Read(PageId(2), [0u8; PAGE_SIZE]),
-                ],
+                vec![Op::Read(PageId(1)), Op::Read(PageId(2)),],
                 bufmgr.disk.history
             );
 
@@ -306,10 +287,7 @@ mod tests {
             assert!(res_same_page.is_ok());
             // no storage access(hit the cache)
             assert_eq!(
-                vec![
-                    Op::Read(PageId(1), [0u8; PAGE_SIZE]),
-                    Op::Read(PageId(2), [0u8; PAGE_SIZE]),
-                ],
+                vec![Op::Read(PageId(1)), Op::Read(PageId(2)),],
                 bufmgr.disk.history
             );
         }
@@ -319,10 +297,10 @@ mod tests {
             // Read * 2 & Write & Read
             assert_eq!(
                 vec![
-                    Op::Read(PageId(1), [0u8; PAGE_SIZE]),
-                    Op::Read(PageId(2), [0u8; PAGE_SIZE]),
-                    Op::Write(PageId(2), [42u8; PAGE_SIZE]),
-                    Op::Read(PageId(1), [42u8; PAGE_SIZE]),
+                    Op::Read(PageId(1)),
+                    Op::Read(PageId(2)),
+                    Op::Write(PageId(2)),
+                    Op::Read(PageId(1)),
                 ],
                 bufmgr.disk.history
             );
