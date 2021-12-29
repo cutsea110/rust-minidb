@@ -1,5 +1,6 @@
-use crate::accessor::dao::entity::Buffer;
+use super::entity::Buffer;
 use crate::buffer::dao::entity::PageId;
+
 use std::io;
 use std::rc::Rc;
 

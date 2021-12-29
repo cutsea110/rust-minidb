@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
+use super::dao::{entity::PageId, storage::*};
 use crate::accessor::dao::{bufferpool::*, entity::Buffer};
-use crate::buffer::dao::{entity::PageId, storage::*};
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct BufferId(usize);
@@ -76,19 +76,13 @@ impl BufferPool {
     }
 }
 
-pub struct BufferPoolManager<T>
-where
-    T: StorageManager,
-{
+pub struct BufferPoolManager<T: StorageManager> {
     disk: T,
     pool: BufferPool,
     page_table: HashMap<PageId, BufferId>,
 }
 
-impl<T> BufferPoolManager<T>
-where
-    T: StorageManager,
-{
+impl<T: StorageManager> BufferPoolManager<T> {
     pub fn new(disk: T, pool: BufferPool) -> Self {
         let page_table = HashMap::new();
         Self {
@@ -99,10 +93,7 @@ where
     }
 }
 
-impl<T> BufferPoolManagerDao for BufferPoolManager<T>
-where
-    T: StorageManager,
-{
+impl<T: StorageManager> BufferPoolManagerDao for BufferPoolManager<T> {
     fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
         if let Some(&buffer_id) = self.page_table.get(&page_id) {
             let frame = &mut self.pool[buffer_id];
