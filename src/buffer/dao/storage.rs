@@ -2,7 +2,7 @@ use super::entity::PageId;
 
 use std::io::Result;
 
-pub trait DiskManagerDao {
+pub trait StorageManager {
     // 新しいページIDを採番する
     fn allocate_page(&mut self) -> PageId;
     // ページのデータを読み出す

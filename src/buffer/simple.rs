@@ -3,7 +3,7 @@ use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
 use crate::accessor::dao::{buffermanager::*, entity::Buffer};
-use crate::buffer::dao::{diskmanager::*, entity::PageId};
+use crate::buffer::dao::{entity::PageId, storage::*};
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct BufferId(usize);
@@ -78,7 +78,7 @@ impl BufferPool {
 
 pub struct BufferPoolManager<T>
 where
-    T: DiskManagerDao,
+    T: StorageManager,
 {
     disk: T,
     pool: BufferPool,
@@ -87,7 +87,7 @@ where
 
 impl<T> BufferPoolManager<T>
 where
-    T: DiskManagerDao,
+    T: StorageManager,
 {
     pub fn new(disk: T, pool: BufferPool) -> Self {
         let page_table = HashMap::new();
@@ -101,7 +101,7 @@ where
 
 impl<T> BufferPoolManagerDao for BufferPoolManager<T>
 where
-    T: DiskManagerDao,
+    T: StorageManager,
 {
     fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
         if let Some(&buffer_id) = self.page_table.get(&page_id) {
@@ -167,12 +167,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::buffer::dao::{diskmanager::DiskManagerDao, entity::PageId};
+    use crate::buffer::dao::{entity::PageId, storage::StorageManager};
     use std::io::Result;
 
     struct MockStorage {}
 
-    impl DiskManagerDao for MockStorage {
+    impl StorageManager for MockStorage {
         fn allocate_page(&mut self) -> PageId {
             panic!("TODO")
         }

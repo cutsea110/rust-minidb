@@ -1,2 +1,2 @@
-pub mod diskmanager;
 pub mod entity;
+pub mod storage;

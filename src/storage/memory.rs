@@ -3,7 +3,7 @@ use std::vec::*;
 
 use zerocopy::AsBytes;
 
-use crate::buffer::dao::{diskmanager::*, entity::PageId};
+use crate::buffer::dao::{entity::PageId, storage::*};
 
 pub const PAGE_SIZE: usize = 4096;
 
@@ -21,7 +21,7 @@ impl MemoryManager {
     }
 }
 
-impl DiskManagerDao for MemoryManager {
+impl StorageManager for MemoryManager {
     fn allocate_page(&mut self) -> PageId {
         let page_id = self.next_page_id;
         self.next_page_id += 1;

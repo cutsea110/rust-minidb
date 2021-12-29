@@ -2,7 +2,7 @@ use std::fs::{File, OpenOptions};
 use std::io::{prelude::*, Result, SeekFrom};
 use std::path::Path;
 
-use crate::buffer::dao::{diskmanager::*, entity::PageId};
+use crate::buffer::dao::{entity::PageId, storage::*};
 
 pub const PAGE_SIZE: usize = 4096;
 
@@ -33,7 +33,7 @@ impl DiskManager {
     }
 }
 
-impl DiskManagerDao for DiskManager {
+impl StorageManager for DiskManager {
     fn allocate_page(&mut self) -> PageId {
         let page_id = self.next_page_id;
         self.next_page_id += 1;
