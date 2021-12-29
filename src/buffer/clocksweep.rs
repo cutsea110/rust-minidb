@@ -158,22 +158,57 @@ impl<T: StorageManager> BufferPoolManager for ClockSweepManager<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::buffer::dao::{entity::PageId, storage::StorageManager};
+    use crate::{
+        accessor::dao::entity::PAGE_SIZE,
+        buffer::dao::{entity::PageId, storage::StorageManager},
+    };
     use std::io::Result;
 
-    struct MockStorage {}
+    enum Op {
+        Alloc(PageId),
+        Read(PageId, [u8; PAGE_SIZE]),
+        Write(PageId, [u8; PAGE_SIZE]),
+        Sync,
+    }
 
-    impl StorageManager for MockStorage {
+    struct TraceStorage {
+        next_page_id: u64,
+        history: Vec<Op>,
+    }
+
+    impl TraceStorage {
+        fn new() -> Self {
+            Self {
+                next_page_id: 0,
+                history: vec![],
+            }
+        }
+    }
+
+    impl StorageManager for TraceStorage {
         fn allocate_page(&mut self) -> PageId {
-            panic!("TODO")
+            let pid = PageId(self.next_page_id);
+            self.next_page_id += 1;
+            let rec = Op::Alloc(pid);
+            self.history.push(rec);
+            pid
         }
         fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()> {
-            panic!("TODO")
+            let mut buf = [0u8; PAGE_SIZE];
+            buf.copy_from_slice(data);
+            let rec = Op::Read(page_id, buf);
+            self.history.push(rec);
+            Ok(())
         }
         fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()> {
-            panic!("TODO")
+            let mut buf = [0u8; PAGE_SIZE];
+            buf.copy_from_slice(data);
+            let rec = Op::Write(page_id, buf);
+            self.history.push(rec);
+            Ok(())
         }
         fn sync(&mut self) -> Result<()> {
+            self.history.push(Op::Sync);
             Ok(())
         }
     }
