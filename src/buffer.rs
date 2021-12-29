@@ -283,7 +283,7 @@ pub mod simple {
     mod tests_with_disk {
         use super::{BufferPool, BufferPoolManager};
         use crate::buffer::bufferdao::buffermanager::*;
-        use crate::disk::disk::{self, DiskManager};
+        use crate::storage::disk::{self, DiskManager};
         use tempfile::tempfile;
 
         #[test]
@@ -335,7 +335,7 @@ pub mod simple {
     mod tests_with_memory {
         use super::{BufferPool, BufferPoolManager};
         use crate::buffer::bufferdao::buffermanager::*;
-        use crate::disk::memory::{self, MemoryManager};
+        use crate::storage::memory::{self, MemoryManager};
 
         #[test]
         fn test_with_memory() {
