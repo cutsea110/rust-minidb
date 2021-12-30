@@ -2,10 +2,13 @@ use bincode::Options;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::accessor::dao::bufferpool;
+use zerocopy::{AsBytes, ByteSlice};
 
-// mod branch;
-// mod leaf;
+use crate::accessor::dao::bufferpool;
+use crate::buffer::dao::entity::PageId;
+
+mod branch;
+mod leaf;
 // mod meta;
 // mod node;
 
@@ -31,4 +34,26 @@ pub enum Error {
     DuplicateKey,
     #[error(transparent)]
     Buffer(#[from] bufferpool::Error),
+}
+
+#[derive(Debug, Clone)]
+pub enum SearchMode {
+    Start,
+    Key(Vec<u8>),
+}
+
+impl SearchMode {
+    fn child_page_id(&self, branch: &branch::Branch<impl ByteSlice>) -> PageId {
+        match self {
+            SearchMode::Start => branch.child_at(0),
+            SearchMode::Key(key) => branch.search_child(key),
+        }
+    }
+
+    fn tuple_slot_id(&self, leaf: &leaf::Leaf<impl ByteSlice>) -> Result<usize, usize> {
+        match self {
+            SearchMode::Start => Err(0),
+            SearchMode::Key(key) => leaf.search_slot_id(key),
+        }
+    }
 }
