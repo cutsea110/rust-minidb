@@ -123,8 +123,13 @@ impl<B: ByteSliceMut> Slotted<B> {
         let mut pointers_mut = self.pointers_mut();
         for pointer in pointers_mut.iter_mut() {
             if pointer.offset <= offset_orig {
-                pointer.offset = free_space_offset_new as u16;
+                pointer.offset = (pointer.offset as isize - len_incr) as u16;
             }
+        }
+        let pointer = &mut pointers_mut[index];
+        pointer.len = len_new as u16;
+        if len_new == 0 {
+            pointer.offset = free_space_offset_new as u16;
         }
         Some(())
     }
