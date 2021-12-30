@@ -88,7 +88,7 @@ impl<B: ByteSliceMut> Branch<B> {
         };
         let pair_bytes = pair.to_bytes();
         assert!(pair_bytes.len() <= self.max_pair_size());
-        self.body.insert(slot_id, pair_bytes.len());
+        self.body.insert(slot_id, pair_bytes.len())?;
         self.body[slot_id].copy_from_slice(&pair_bytes);
         Some(())
     }
