@@ -1,16 +1,20 @@
+use std::cell::{Ref, RefMut};
+use std::convert::identity;
+use std::rc::Rc;
+
 use bincode::Options;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use zerocopy::{AsBytes, ByteSlice};
 
-use crate::accessor::dao::bufferpool;
+use crate::accessor::dao::bufferpool::{self, BufferPoolManager};
 use crate::buffer::dao::entity::PageId;
 
 mod branch;
 mod leaf;
-// mod meta;
-// mod node;
+mod meta;
+mod node;
 
 #[derive(Serialize, Deserialize)]
 pub struct Pair<'a> {
@@ -55,5 +59,27 @@ impl SearchMode {
             SearchMode::Start => Err(0),
             SearchMode::Key(key) => leaf.search_slot_id(key),
         }
+    }
+}
+
+pub struct BTree {
+    pub meta_page_id: PageId,
+}
+
+impl BTree {
+    pub fn create(bufmgr: &mut BufferPoolManager) -> Result<Self, Error> {
+        let meta_buffer = bufmgr.create_page()?;
+        let mut meta = meta::Meta::new(meta_buffer.page.borrow_mut() as RefMut<[_]>);
+        let root_buffer = bufmgr.create_page()?;
+        let mut root = node::Node::new(root_buffer.page.borrow_mut() as RefMut<[_]>);
+        root.initialize_as_leaf();
+        let mut leaf = leaf::Leaf::new(root.body);
+        leaf.initialize();
+        meta.header.root_page_id = root_buffer.page_id;
+        Ok(Self::new(meta_buffer.page_id))
+    }
+
+    pub fn new(meta_page_id: PageId) -> Self {
+        Self { meta_page_id }
     }
 }
