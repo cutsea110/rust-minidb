@@ -70,7 +70,7 @@ pub struct BTree {
 }
 
 impl BTree {
-    pub fn create(bufmgr: &mut BufferPoolManager) -> Result<Self, Error> {
+    pub fn create(bufmgr: &mut dyn BufferPoolManager) -> Result<Self, Error> {
         let meta_buffer = bufmgr.create_page()?;
         let mut meta = meta::Meta::new(meta_buffer.page.borrow_mut() as RefMut<[_]>);
         let root_buffer = bufmgr.create_page()?;
@@ -86,7 +86,7 @@ impl BTree {
         Self { meta_page_id }
     }
 
-    fn fetch_root_page(&self, bufmgr: &mut BufferPoolManager) -> Result<Rc<Buffer>, Error> {
+    fn fetch_root_page(&self, bufmgr: &mut dyn BufferPoolManager) -> Result<Rc<Buffer>, Error> {
         let root_page_id = {
             let meta_buffer = bufmgr.fetch_page(self.meta_page_id)?;
             let meta = meta::Meta::new(meta_buffer.page.borrow() as Ref<[_]>);
@@ -97,7 +97,7 @@ impl BTree {
 
     fn search_internal(
         &self,
-        bufmgr: &mut BufferPoolManager,
+        bufmgr: &mut dyn BufferPoolManager,
         node_buffer: Rc<Buffer>,
         search_mode: SearchMode,
     ) -> Result<Iter, Error> {
@@ -123,7 +123,7 @@ impl BTree {
 
     pub fn search(
         &self,
-        bufmgr: &mut BufferPoolManager,
+        bufmgr: &mut dyn BufferPoolManager,
         search_mode: SearchMode,
     ) -> Result<Iter, Error> {
         let root_page = self.fetch_root_page(bufmgr)?;
@@ -132,7 +132,7 @@ impl BTree {
 
     pub fn insert_internal(
         &self,
-        bufmgr: &mut BufferPoolManager,
+        bufmgr: &mut dyn BufferPoolManager,
         buffer: Rc<Buffer>,
         key: &[u8],
         value: &[u8],
@@ -213,7 +213,7 @@ impl BTree {
 
     pub fn insert(
         &self,
-        bufmgr: &mut BufferPoolManager,
+        bufmgr: &mut dyn BufferPoolManager,
         key: &[u8],
         value: &[u8],
     ) -> Result<(), Error> {
@@ -254,7 +254,7 @@ impl Iter {
     #[allow(clippy::type_complexity)]
     pub fn next(
         &mut self,
-        bufmgr: &mut BufferPoolManager,
+        bufmgr: &mut dyn BufferPoolManager,
     ) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error> {
         let value = self.get();
         self.slot_id += 1;
