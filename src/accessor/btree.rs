@@ -130,7 +130,7 @@ impl BTree {
         self.search_internal(bufmgr, root_page, search_mode)
     }
 
-    pub fn insert_internal(
+    fn insert_internal(
         &self,
         bufmgr: &mut dyn BufferPoolManager,
         buffer: Rc<Buffer>,
