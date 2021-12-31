@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use minidb::accessor::btree::{BTree, Iterable, SearchMode};
+use minidb::accessor::btree::{AccessMethod, BTree, Iterable, SearchMode};
 use minidb::buffer::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::buffer::dao::entity::PageId;
 use minidb::storage::disk::DiskManager;

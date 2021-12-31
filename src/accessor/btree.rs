@@ -69,7 +69,7 @@ pub trait Iterable<T: BufferPoolManager> {
     fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error>;
 }
 
-trait AccessMethod<T: BufferPoolManager> {
+pub trait AccessMethod<T: BufferPoolManager> {
     type Iterable: Iterable<T>;
 
     fn search(&self, bufmgr: &mut T, search_mode: SearchMode) -> Result<Self::Iterable, Error>;
@@ -130,15 +130,6 @@ impl BTree {
                 self.search_internal(bufmgr, child_node_page, search_mode)
             }
         }
-    }
-
-    pub fn search(
-        &self,
-        bufmgr: &mut dyn BufferPoolManager,
-        search_mode: SearchMode,
-    ) -> Result<Iter, Error> {
-        let root_page = self.fetch_root_page(bufmgr)?;
-        self.search_internal(bufmgr, root_page, search_mode)
     }
 
     fn insert_internal(
@@ -221,13 +212,17 @@ impl BTree {
             }
         }
     }
+}
 
-    pub fn insert(
-        &self,
-        bufmgr: &mut dyn BufferPoolManager,
-        key: &[u8],
-        value: &[u8],
-    ) -> Result<(), Error> {
+impl<T: BufferPoolManager> AccessMethod<T> for BTree {
+    type Iterable = Iter;
+
+    fn search(&self, bufmgr: &mut T, search_mode: SearchMode) -> Result<Self::Iterable, Error> {
+        let root_page = self.fetch_root_page(bufmgr)?;
+        self.search_internal(bufmgr, root_page, search_mode)
+    }
+
+    fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error> {
         let meta_buffer = bufmgr.fetch_page(self.meta_page_id)?;
         let mut meta = meta::Meta::new(meta_buffer.page.borrow_mut() as RefMut<[_]>);
         let root_page_id = meta.header.root_page_id;
