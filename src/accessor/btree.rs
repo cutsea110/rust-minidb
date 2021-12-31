@@ -65,6 +65,17 @@ impl SearchMode {
     }
 }
 
+pub trait Iterable<T: BufferPoolManager> {
+    fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error>;
+}
+
+trait AccessMethod<T: BufferPoolManager> {
+    type Iterable: Iterable<T>;
+
+    fn search(&self, bufmgr: &mut T, search_mode: SearchMode) -> Result<Self::Iterable, Error>;
+    fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error>;
+}
+
 pub struct BTree {
     pub meta_page_id: PageId,
 }
@@ -250,12 +261,11 @@ impl Iter {
             None
         }
     }
+}
 
+impl<T: BufferPoolManager> Iterable<T> for Iter {
     #[allow(clippy::type_complexity)]
-    pub fn next(
-        &mut self,
-        bufmgr: &mut dyn BufferPoolManager,
-    ) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error> {
+    fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error> {
         let value = self.get();
         self.slot_id += 1;
         let next_page_id = {
