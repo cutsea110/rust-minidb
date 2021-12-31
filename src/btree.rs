@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 use std::cell::{Ref, RefMut};
 use std::convert::identity;
 use std::rc::Rc;
@@ -8,7 +9,10 @@ use thiserror::Error;
 
 use zerocopy::{AsBytes, ByteSlice};
 
-use crate::accessor::dao::bufferpool::{self, BufferPoolManager};
+use crate::accessor::dao::{
+    bufferpool::{self, BufferPoolManager},
+    entity::Buffer,
+};
 use crate::buffer::dao::entity::PageId;
 
 mod branch;
@@ -82,4 +86,156 @@ impl BTree {
     pub fn new(meta_page_id: PageId) -> Self {
         Self { meta_page_id }
     }
+
+    fn fetch_root_page(&self, bufmgr: &mut BufferPoolManager) -> Result<Rc<Buffer>, Error> {
+        let root_page_id = {
+            let meta_buffer = bufmgr.fetch_page(self.meta_page_id)?;
+            let meta = meta::Meta::new(meta_buffer.page.borrow() as Ref<[_]>);
+            meta.header.root_page_id
+        };
+        Ok(bufmgr.fetch_page(root_page_id)?)
+    }
+
+    fn search_internal(
+        &self,
+        bufmgr: &mut BufferPoolManager,
+        node_buffer: Rc<Buffer>,
+        search_mode: SearchMode,
+    ) -> Result<Iter, Error> {
+        let node = node::Node::new(node_buffer.page.borrow() as Ref<[_]>);
+        match node::Body::new(node.header.node_type, node.body.as_bytes()) {
+            node::Body::Leaf(leaf) => {
+                let slot_id = search_mode.tuple_slot_id(&leaf).unwrap_or_else(identity);
+                drop(node);
+                Ok(Iter {
+                    buffer: node_buffer,
+                    slot_id,
+                })
+            }
+            node::Body::Branch(branch) => {
+                let child_page_id = search_mode.child_page_id(&branch);
+                drop(node);
+                drop(node_buffer);
+                let child_node_page = bufmgr.fetch_page(child_page_id)?;
+                self.search_internal(bufmgr, child_node_page, search_mode)
+            }
+        }
+    }
+
+    pub fn search(
+        &self,
+        bufmgr: &mut BufferPoolManager,
+        search_mode: SearchMode,
+    ) -> Result<Iter, Error> {
+        let root_page = self.fetch_root_page(bufmgr)?;
+        self.search_internal(bufmgr, root_page, search_mode)
+    }
+
+    pub fn insert_internal(
+        &self,
+        bufmgr: &mut BufferPoolManager,
+        buffer: Rc<Buffer>,
+        key: &[u8],
+        value: &[u8],
+    ) -> Result<Option<(Vec<u8>, PageId)>, Error> {
+        let node = node::Node::new(buffer.page.borrow_mut() as RefMut<[_]>);
+        match node::Body::new(node.header.node_type, node.body) {
+            node::Body::Leaf(mut leaf) => {
+                let slot_id = match leaf.search_slot_id(key) {
+                    Ok(_) => return Err(Error::DuplicateKey),
+                    Err(slot_id) => slot_id,
+                };
+                if leaf.insert(slot_id, key, value).is_some() {
+                    buffer.is_dirty.set(true);
+                    Ok(None)
+                } else {
+                    let prev_leaf_page_id = leaf.prev_page_id();
+                    let prev_leaf_buffer = prev_leaf_page_id
+                        .map(|next_leaf_page_id| bufmgr.fetch_page(next_leaf_page_id))
+                        .transpose()?;
+
+                    let new_leaf_buffer = bufmgr.create_page()?;
+
+                    if let Some(prev_leaf_buffer) = prev_leaf_buffer {
+                        let node =
+                            node::Node::new(prev_leaf_buffer.page.borrow_mut() as RefMut<[_]>);
+                        let mut prev_leaf = leaf::Leaf::new(node.body);
+                        prev_leaf.set_next_page_id(Some(new_leaf_buffer.page_id));
+                        prev_leaf_buffer.is_dirty.set(true);
+                    }
+                    leaf.set_prev_page_id(Some(new_leaf_buffer.page_id));
+
+                    let mut new_leaf_node =
+                        node::Node::new(new_leaf_buffer.page.borrow_mut() as RefMut<[_]>);
+                    new_leaf_node.initialize_as_leaf();
+                    let mut new_leaf = leaf::Leaf::new(new_leaf_node.body);
+                    new_leaf.initialize();
+                    let overflow_key = leaf.split_insert(&mut new_leaf, key, value);
+                    new_leaf.set_next_page_id(Some(buffer.page_id));
+                    new_leaf.set_prev_page_id(prev_leaf_page_id);
+                    buffer.is_dirty.set(true);
+                    Ok(Some((overflow_key, new_leaf_buffer.page_id)))
+                }
+            }
+            node::Body::Branch(mut branch) => {
+                let child_idx = branch.search_child_idx(key);
+                let child_page_id = branch.child_at(child_idx);
+                let child_node_buffer = bufmgr.fetch_page(child_page_id)?;
+                if let Some((overflow_key_from_child, overflow_child_page_id)) =
+                    self.insert_internal(bufmgr, child_node_buffer, key, value)?
+                {
+                    if branch
+                        .insert(child_idx, &overflow_key_from_child, overflow_child_page_id)
+                        .is_some()
+                    {
+                        buffer.is_dirty.set(true);
+                        Ok(None)
+                    } else {
+                        let new_branch_buffer = bufmgr.create_page()?;
+                        let mut new_branch_node =
+                            node::Node::new(new_branch_buffer.page.borrow_mut() as RefMut<[_]>);
+                        new_branch_node.initialize_as_branch();
+                        let mut new_branch = branch::Branch::new(new_branch_node.body);
+                        let overflow_key = branch.split_insert(
+                            &mut new_branch,
+                            &overflow_key_from_child,
+                            overflow_child_page_id,
+                        );
+                        buffer.is_dirty.set(true);
+                        new_branch_buffer.is_dirty.set(true);
+                        Ok(Some((overflow_key, new_branch_buffer.page_id)))
+                    }
+                } else {
+                    Ok(None)
+                }
+            }
+        }
+    }
+
+    pub fn insert(
+        &self,
+        bufmgr: &mut BufferPoolManager,
+        key: &[u8],
+        value: &[u8],
+    ) -> Result<(), Error> {
+        let meta_buffer = bufmgr.fetch_page(self.meta_page_id)?;
+        let mut meta = meta::Meta::new(meta_buffer.page.borrow_mut() as RefMut<[_]>);
+        let root_page_id = meta.header.root_page_id;
+        let root_buffer = bufmgr.fetch_page(root_page_id)?;
+        if let Some((key, child_page_id)) = self.insert_internal(bufmgr, root_buffer, key, value)? {
+            let new_root_buffer = bufmgr.create_page()?;
+            let mut node = node::Node::new(new_root_buffer.page.borrow_mut() as RefMut<[_]>);
+            node.initialize_as_branch();
+            let mut branch = branch::Branch::new(node.body);
+            branch.initialize(&key, child_page_id, root_page_id);
+            meta.header.root_page_id = new_root_buffer.page_id;
+            meta_buffer.is_dirty.set(true);
+        }
+        Ok(())
+    }
+}
+
+pub struct Iter {
+    buffer: Rc<Buffer>,
+    slot_id: usize,
 }
