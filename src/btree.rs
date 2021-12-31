@@ -239,3 +239,111 @@ pub struct Iter {
     buffer: Rc<Buffer>,
     slot_id: usize,
 }
+
+impl Iter {
+    fn get(&self) -> Option<(Vec<u8>, Vec<u8>)> {
+        let leaf_node = node::Node::new(self.buffer.page.borrow() as Ref<[_]>);
+        let leaf = leaf::Leaf::new(leaf_node.body);
+        if self.slot_id < leaf.num_pairs() {
+            let pair = leaf.pair_at(self.slot_id);
+            Some((pair.key.to_vec(), pair.value.to_vec()))
+        } else {
+            None
+        }
+    }
+
+    #[allow(clippy::type_complexity)]
+    pub fn next(
+        &mut self,
+        bufmgr: &mut BufferPoolManager,
+    ) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error> {
+        let value = self.get();
+        self.slot_id += 1;
+        let next_page_id = {
+            let leaf_node = node::Node::new(self.buffer.page.borrow() as Ref<[_]>);
+            let leaf = leaf::Leaf::new(leaf_node.body);
+            if self.slot_id < leaf.num_pairs() {
+                return Ok(value);
+            }
+            leaf.next_page_id()
+        };
+        if let Some(next_page_id) = next_page_id {
+            self.buffer = bufmgr.fetch_page(next_page_id)?;
+            self.slot_id = 0;
+        }
+        Ok(value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tempfile::tempfile;
+
+    use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
+    use crate::storage::disk::DiskManager;
+
+    use super::*;
+    #[test]
+    fn test() {
+        let disk = DiskManager::new(tempfile().unwrap()).unwrap();
+        let pool = BufferPool::new(10);
+        let mut bufmgr = ClockSweepManager::new(disk, pool);
+        let btree = BTree::create(&mut bufmgr).unwrap();
+        btree
+            .insert(&mut bufmgr, &6u64.to_be_bytes(), b"world")
+            .unwrap();
+        btree
+            .insert(&mut bufmgr, &3u64.to_be_bytes(), b"hello")
+            .unwrap();
+        btree
+            .insert(&mut bufmgr, &8u64.to_be_bytes(), b"!")
+            .unwrap();
+        btree
+            .insert(&mut bufmgr, &4u64.to_be_bytes(), b",")
+            .unwrap();
+
+        let (_, value) = btree
+            .search(&mut bufmgr, SearchMode::Key(3u64.to_be_bytes().to_vec()))
+            .unwrap()
+            .get()
+            .unwrap();
+        assert_eq!(b"hello", &value[..]);
+        let (_, value) = btree
+            .search(&mut bufmgr, SearchMode::Key(8u64.to_be_bytes().to_vec()))
+            .unwrap()
+            .get()
+            .unwrap();
+        assert_eq!(b"!", &value[..]);
+    }
+
+    #[test]
+    fn test_split() {
+        let disk = DiskManager::new(tempfile().unwrap()).unwrap();
+        let pool = BufferPool::new(10);
+        let mut bufmgr = ClockSweepManager::new(disk, pool);
+        let btree = BTree::create(&mut bufmgr).unwrap();
+        let long_padding = vec![0xDEu8; 1500];
+        btree
+            .insert(&mut bufmgr, &6u64.to_be_bytes(), &long_padding)
+            .unwrap();
+        btree
+            .insert(&mut bufmgr, &3u64.to_be_bytes(), &long_padding)
+            .unwrap();
+        btree
+            .insert(&mut bufmgr, &8u64.to_be_bytes(), &long_padding)
+            .unwrap();
+        btree
+            .insert(&mut bufmgr, &4u64.to_be_bytes(), &long_padding)
+            .unwrap();
+        btree
+            .insert(&mut bufmgr, &5u64.to_be_bytes(), b"hello")
+            .unwrap();
+
+        let (_, value) = btree
+            .search(&mut bufmgr, SearchMode::Key(5u64.to_be_bytes().to_vec()))
+            .unwrap()
+            .get()
+            .unwrap();
+        assert_eq!(b"hello", &value[..]);
+    }
+}
