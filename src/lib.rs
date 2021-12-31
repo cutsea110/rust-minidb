@@ -1,9 +1,6 @@
 pub mod accessor;
-mod bsearch;
-pub mod btree;
 pub mod buffer;
 pub mod executor;
-mod slotted;
 pub mod storage;
 // pub mod tuple;
 // pub mod query;
