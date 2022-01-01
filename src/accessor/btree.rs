@@ -65,14 +65,19 @@ impl SearchMode {
     }
 }
 
+impl SearchOpt for SearchMode {}
+
 pub trait Iterable<T: BufferPoolManager> {
     fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error>;
 }
 
+pub trait SearchOpt {}
+
 pub trait AccessMethod<T: BufferPoolManager> {
     type Iterable: Iterable<T>;
+    type Opt: SearchOpt;
 
-    fn search(&self, bufmgr: &mut T, search_mode: SearchMode) -> Result<Self::Iterable, Error>;
+    fn search(&self, bufmgr: &mut T, search_mode: Self::Opt) -> Result<Self::Iterable, Error>;
     fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error>;
 }
 
@@ -216,8 +221,9 @@ impl BTree {
 
 impl<T: BufferPoolManager> AccessMethod<T> for BTree {
     type Iterable = Iter;
+    type Opt = SearchMode;
 
-    fn search(&self, bufmgr: &mut T, search_mode: SearchMode) -> Result<Self::Iterable, Error> {
+    fn search(&self, bufmgr: &mut T, search_mode: Self::Opt) -> Result<Self::Iterable, Error> {
         let root_page = self.fetch_root_page(bufmgr)?;
         self.search_internal(bufmgr, root_page, search_mode)
     }
