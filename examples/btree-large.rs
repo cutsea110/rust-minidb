@@ -1,9 +1,10 @@
 use anyhow::Result;
 use md5::{Digest, Md5};
 
-use minidb::accessor::btree::{AccessMethod, BTree};
+use minidb::accessor::btree::BTree;
 use minidb::accessor::dao::bufferpool::BufferPoolManager;
 use minidb::buffer::clocksweep::{BufferPool, ClockSweepManager};
+use minidb::executor::dao::accessmethod::AccessMethod;
 use minidb::storage::disk::DiskManager;
 
 const NUM_PAIRS: u32 = 1_000_000;

@@ -4,15 +4,12 @@ use std::rc::Rc;
 
 use bincode::Options;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 use zerocopy::{AsBytes, ByteSlice};
 
-use crate::accessor::dao::{
-    bufferpool::{self, BufferPoolManager},
-    entity::Buffer,
-};
+use crate::accessor::dao::{bufferpool::BufferPoolManager, entity::Buffer};
 use crate::buffer::dao::entity::PageId;
+use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOpt};
 
 mod branch;
 mod leaf;
@@ -33,14 +30,6 @@ impl<'a> Pair<'a> {
     fn from_bytes(bytes: &'a [u8]) -> Self {
         bincode::options().deserialize(bytes).unwrap()
     }
-}
-
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("duplicate key")]
-    DuplicateKey,
-    #[error(transparent)]
-    Buffer(#[from] bufferpool::Error),
 }
 
 #[derive(Debug, Clone)]
@@ -66,20 +55,6 @@ impl SearchMode {
 }
 
 impl SearchOpt for SearchMode {}
-
-pub trait Iterable<T: BufferPoolManager> {
-    fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error>;
-}
-
-pub trait SearchOpt {}
-
-pub trait AccessMethod<T: BufferPoolManager> {
-    type Iterable: Iterable<T>;
-    type Opt: SearchOpt;
-
-    fn search(&self, bufmgr: &mut T, search_mode: Self::Opt) -> Result<Self::Iterable, Error>;
-    fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error>;
-}
 
 pub struct BTree {
     pub meta_page_id: PageId,
