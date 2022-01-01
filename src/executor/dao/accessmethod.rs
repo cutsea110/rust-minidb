@@ -11,7 +11,8 @@ pub enum Error {
 }
 
 pub trait Iterable<T: BufferPoolManager> {
-    fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error>;
+    type Item;
+    fn next(&mut self, bufmgr: &mut T) -> Result<Option<Self::Item>, Error>;
 }
 
 pub trait SearchOption {}

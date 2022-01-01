@@ -242,8 +242,10 @@ impl Iter {
 }
 
 impl<T: BufferPoolManager> Iterable<T> for Iter {
+    type Item = (Vec<u8>, Vec<u8>);
+
     #[allow(clippy::type_complexity)]
-    fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error> {
+    fn next(&mut self, bufmgr: &mut T) -> Result<Option<Self::Item>, Error> {
         let value = self.get();
         self.slot_id += 1;
         let next_page_id = {
