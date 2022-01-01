@@ -264,14 +264,15 @@ impl<T: BufferPoolManager> Iterable<T> for Iter {
 
 #[cfg(test)]
 mod tests {
-    use tempfile::tempfile;
-
-    use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
-    use crate::storage::disk::DiskManager;
-
-    use super::*;
     #[test]
     fn test() {
+        use tempfile::tempfile;
+
+        use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
+        use crate::storage::disk::DiskManager;
+
+        use super::*;
+
         let disk = DiskManager::new(tempfile().unwrap()).unwrap();
         let pool = BufferPool::new(10);
         let mut bufmgr = ClockSweepManager::new(disk, pool);
@@ -305,6 +306,13 @@ mod tests {
 
     #[test]
     fn test_split() {
+        use tempfile::tempfile;
+
+        use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
+        use crate::storage::disk::DiskManager;
+
+        use super::*;
+
         let disk = DiskManager::new(tempfile().unwrap()).unwrap();
         let pool = BufferPool::new(10);
         let mut bufmgr = ClockSweepManager::new(disk, pool);
