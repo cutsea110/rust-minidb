@@ -9,7 +9,7 @@ use zerocopy::{AsBytes, ByteSlice};
 
 use crate::accessor::dao::{bufferpool::BufferPoolManager, entity::Buffer};
 use crate::buffer::dao::entity::PageId;
-use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
+use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable};
 
 mod branch;
 mod leaf;
