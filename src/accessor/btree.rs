@@ -9,7 +9,7 @@ use zerocopy::{AsBytes, ByteSlice};
 
 use crate::accessor::dao::{bufferpool::BufferPoolManager, entity::Buffer};
 use crate::buffer::dao::entity::PageId;
-use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOpt};
+use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
 
 mod branch;
 mod leaf;
@@ -194,9 +194,13 @@ impl BTree {
 
 impl<T: BufferPoolManager> AccessMethod<T> for BTree {
     type Iterable = Iter;
-    type Opt = SearchMode;
+    type SearchOption = SearchMode;
 
-    fn search(&self, bufmgr: &mut T, search_mode: Self::Opt) -> Result<Self::Iterable, Error> {
+    fn search(
+        &self,
+        bufmgr: &mut T,
+        search_mode: Self::SearchOption,
+    ) -> Result<Self::Iterable, Error> {
         let root_page = self.fetch_root_page(bufmgr)?;
         self.search_internal(bufmgr, root_page, search_mode)
     }
