@@ -16,6 +16,8 @@ pub trait Iterable<T: BufferPoolManager> {
 
 pub trait SearchOpt {}
 
+impl<T> SearchOpt for T {}
+
 pub trait AccessMethod<T: BufferPoolManager> {
     type Iterable: Iterable<T>;
     type Opt: SearchOpt;

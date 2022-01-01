@@ -54,8 +54,6 @@ impl SearchMode {
     }
 }
 
-impl SearchOpt for SearchMode {}
-
 pub struct BTree {
     pub meta_page_id: PageId,
 }
