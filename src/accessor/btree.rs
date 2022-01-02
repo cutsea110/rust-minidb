@@ -351,4 +351,34 @@ mod tests {
             assert!(res.is_none());
         }
     }
+
+    #[test]
+    fn test_split() {
+        let mut bufmgr = InfinityBuffer::new();
+        let btree = BTree::create(&mut bufmgr).unwrap();
+        let long_padding = vec![0xDEu8; 1500];
+
+        {
+            // insert
+            let res1 = btree.insert(&mut bufmgr, &6u64.to_be_bytes(), &long_padding);
+            assert!(res1.is_ok());
+            let res2 = btree.insert(&mut bufmgr, &3u64.to_be_bytes(), &long_padding);
+            assert!(res2.is_ok());
+            let res3 = btree.insert(&mut bufmgr, &8u64.to_be_bytes(), &long_padding);
+            assert!(res3.is_ok());
+            let res4 = btree.insert(&mut bufmgr, &4u64.to_be_bytes(), &long_padding);
+            assert!(res4.is_ok());
+            let res5 = btree.insert(&mut bufmgr, &5u64.to_be_bytes(), b"hello");
+            assert!(res5.is_ok());
+        }
+        {
+            // search key
+            let (_, value) = btree
+                .search(&mut bufmgr, SearchMode::Key(5u64.to_be_bytes().to_vec()))
+                .unwrap()
+                .get()
+                .unwrap();
+            assert_eq!(b"hello", &value[..]);
+        }
+    }
 }
