@@ -272,9 +272,11 @@ mod tests {
     use crate::accessor::dao::entity::Buffer;
     use crate::buffer::dao::entity::PageId;
 
-    struct TraceBuffer {}
+    struct CacheBuffer {}
 
-    impl BufferPoolManager for TraceBuffer {
+    impl CacheBuffer {}
+
+    impl BufferPoolManager for CacheBuffer {
         fn create_page(&mut self) -> Result<Rc<Buffer>, bufferpool::Error> {
             panic!("TODO")
         }
@@ -288,7 +290,8 @@ mod tests {
     }
 
     #[test]
-    fn unit_test() {}
+    fn insert_test() {}
+    fn search_test() {}
 
     // TODO: これはここではない
     #[test]
