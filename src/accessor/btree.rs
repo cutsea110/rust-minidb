@@ -323,8 +323,14 @@ mod tests {
         assert!(res3.is_ok());
         let res4 = btree.insert(&mut bufmgr, &4u64.to_be_bytes(), b",");
         assert!(res4.is_ok());
+
+        let (_, value) = btree
+            .search(&mut bufmgr, SearchMode::Key(3u64.to_be_bytes().to_vec()))
+            .unwrap()
+            .get()
+            .unwrap();
+        assert_eq!(b"hello", &value[..]);
     }
-    fn search_test() {}
 
     // TODO: これはここではない
     #[test]
