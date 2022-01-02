@@ -312,17 +312,21 @@ mod tests {
     }
 
     #[test]
-    fn insert_test() {
+    fn test() {
         let mut bufmgr = InfinityBuffer::new();
         let btree = BTree::create(&mut bufmgr).unwrap();
-        let res1 = btree.insert(&mut bufmgr, &6u64.to_be_bytes(), b"world");
-        assert!(res1.is_ok());
-        let res2 = btree.insert(&mut bufmgr, &3u64.to_be_bytes(), b"hello");
-        assert!(res2.is_ok());
-        let res3 = btree.insert(&mut bufmgr, &8u64.to_be_bytes(), b"!");
-        assert!(res3.is_ok());
-        let res4 = btree.insert(&mut bufmgr, &4u64.to_be_bytes(), b",");
-        assert!(res4.is_ok());
+
+        {
+            // insert
+            let res1 = btree.insert(&mut bufmgr, &6u64.to_be_bytes(), b"world");
+            assert!(res1.is_ok());
+            let res2 = btree.insert(&mut bufmgr, &3u64.to_be_bytes(), b"hello");
+            assert!(res2.is_ok());
+            let res3 = btree.insert(&mut bufmgr, &8u64.to_be_bytes(), b"!");
+            assert!(res3.is_ok());
+            let res4 = btree.insert(&mut bufmgr, &4u64.to_be_bytes(), b",");
+            assert!(res4.is_ok());
+        }
         {
             // search key
             let (_, value) = btree
@@ -346,85 +350,5 @@ mod tests {
             let res = iter.next(&mut bufmgr).unwrap();
             assert!(res.is_none());
         }
-    }
-
-    // TODO: これはここではない
-    #[test]
-    fn integration_test() {
-        use tempfile::tempfile;
-
-        use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
-        use crate::storage::disk::DiskManager;
-
-        use super::*;
-
-        let disk = DiskManager::new(tempfile().unwrap()).unwrap();
-        let pool = BufferPool::new(10);
-        let mut bufmgr = ClockSweepManager::new(disk, pool);
-        let btree = BTree::create(&mut bufmgr).unwrap();
-        btree
-            .insert(&mut bufmgr, &6u64.to_be_bytes(), b"world")
-            .unwrap();
-        btree
-            .insert(&mut bufmgr, &3u64.to_be_bytes(), b"hello")
-            .unwrap();
-        btree
-            .insert(&mut bufmgr, &8u64.to_be_bytes(), b"!")
-            .unwrap();
-        btree
-            .insert(&mut bufmgr, &4u64.to_be_bytes(), b",")
-            .unwrap();
-
-        let (_, value) = btree
-            .search(&mut bufmgr, SearchMode::Key(3u64.to_be_bytes().to_vec()))
-            .unwrap()
-            .get()
-            .unwrap();
-        assert_eq!(b"hello", &value[..]);
-        let (_, value) = btree
-            .search(&mut bufmgr, SearchMode::Key(8u64.to_be_bytes().to_vec()))
-            .unwrap()
-            .get()
-            .unwrap();
-        assert_eq!(b"!", &value[..]);
-    }
-
-    // TODO: これはここではない
-    #[test]
-    fn integration_test_split() {
-        use tempfile::tempfile;
-
-        use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
-        use crate::storage::disk::DiskManager;
-
-        use super::*;
-
-        let disk = DiskManager::new(tempfile().unwrap()).unwrap();
-        let pool = BufferPool::new(10);
-        let mut bufmgr = ClockSweepManager::new(disk, pool);
-        let btree = BTree::create(&mut bufmgr).unwrap();
-        let long_padding = vec![0xDEu8; 1500];
-        btree
-            .insert(&mut bufmgr, &6u64.to_be_bytes(), &long_padding)
-            .unwrap();
-        btree
-            .insert(&mut bufmgr, &3u64.to_be_bytes(), &long_padding)
-            .unwrap();
-        btree
-            .insert(&mut bufmgr, &8u64.to_be_bytes(), &long_padding)
-            .unwrap();
-        btree
-            .insert(&mut bufmgr, &4u64.to_be_bytes(), &long_padding)
-            .unwrap();
-        btree
-            .insert(&mut bufmgr, &5u64.to_be_bytes(), b"hello")
-            .unwrap();
-
-        let (_, value) = btree
-            .search(&mut bufmgr, SearchMode::Key(5u64.to_be_bytes().to_vec()))
-            .unwrap()
-            .get()
-            .unwrap();
-        assert_eq!(b"hello", &value[..]);
     }
 }
