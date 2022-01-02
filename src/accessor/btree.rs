@@ -266,8 +266,33 @@ impl<T: BufferPoolManager> Iterable<T> for Iter {
 
 #[cfg(test)]
 mod tests {
+    use std::rc::Rc;
+
+    use crate::accessor::dao::bufferpool::{self, BufferPoolManager};
+    use crate::accessor::dao::entity::Buffer;
+    use crate::buffer::dao::entity::PageId;
+
+    struct TraceBuffer {}
+
+    impl BufferPoolManager for TraceBuffer {
+        fn create_page(&mut self) -> Result<Rc<Buffer>, bufferpool::Error> {
+            panic!("TODO")
+        }
+
+        fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, bufferpool::Error> {
+            panic!("TODO")
+        }
+        fn flush(&mut self) -> Result<(), bufferpool::Error> {
+            Ok(())
+        }
+    }
+
     #[test]
-    fn test() {
+    fn unit_test() {}
+
+    // TODO: これはここではない
+    #[test]
+    fn integration_test() {
         use tempfile::tempfile;
 
         use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
@@ -306,8 +331,9 @@ mod tests {
         assert_eq!(b"!", &value[..]);
     }
 
+    // TODO: これはここではない
     #[test]
-    fn test_split() {
+    fn integration_test_split() {
         use tempfile::tempfile;
 
         use crate::buffer::clocksweep::{BufferPool, ClockSweepManager};
