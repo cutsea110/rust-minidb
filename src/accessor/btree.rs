@@ -323,13 +323,29 @@ mod tests {
         assert!(res3.is_ok());
         let res4 = btree.insert(&mut bufmgr, &4u64.to_be_bytes(), b",");
         assert!(res4.is_ok());
-
-        let (_, value) = btree
-            .search(&mut bufmgr, SearchMode::Key(3u64.to_be_bytes().to_vec()))
-            .unwrap()
-            .get()
-            .unwrap();
-        assert_eq!(b"hello", &value[..]);
+        {
+            // search key
+            let (_, value) = btree
+                .search(&mut bufmgr, SearchMode::Key(3u64.to_be_bytes().to_vec()))
+                .unwrap()
+                .get()
+                .unwrap();
+            assert_eq!(b"hello", &value[..]);
+        }
+        {
+            // search all
+            let mut iter = btree.search(&mut bufmgr, SearchMode::Start).unwrap();
+            let (_, value1) = iter.next(&mut bufmgr).unwrap().unwrap();
+            assert_eq!(b"hello", &value1[..]);
+            let (_, value2) = iter.next(&mut bufmgr).unwrap().unwrap();
+            assert_eq!(b",", &value2[..]);
+            let (_, value3) = iter.next(&mut bufmgr).unwrap().unwrap();
+            assert_eq!(b"world", &value3[..]);
+            let (_, value4) = iter.next(&mut bufmgr).unwrap().unwrap();
+            assert_eq!(b"!", &value4[..]);
+            let res = iter.next(&mut bufmgr).unwrap();
+            assert!(res.is_none());
+        }
     }
 
     // TODO: これはここではない
