@@ -5,7 +5,7 @@ pub const PAGE_SIZE: usize = 4096;
 
 pub type Page = [u8; PAGE_SIZE];
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Buffer {
     pub page_id: PageId,
     pub page: RefCell<Page>,

@@ -268,21 +268,43 @@ impl<T: BufferPoolManager> Iterable<T> for Iter {
 mod tests {
     use std::rc::Rc;
 
+    use super::*;
     use crate::accessor::dao::bufferpool::{self, BufferPoolManager};
     use crate::accessor::dao::entity::Buffer;
     use crate::buffer::dao::entity::PageId;
 
-    struct CacheBuffer {}
+    #[derive(Debug, PartialEq)]
+    struct InfinityBuffer {
+        next_page_id: u64,
+        data: Vec<Rc<Buffer>>,
+    }
 
-    impl CacheBuffer {}
+    impl InfinityBuffer {
+        fn new() -> Self {
+            Self {
+                next_page_id: 0,
+                data: vec![],
+            }
+        }
+    }
 
-    impl BufferPoolManager for CacheBuffer {
+    impl BufferPoolManager for InfinityBuffer {
         fn create_page(&mut self) -> Result<Rc<Buffer>, bufferpool::Error> {
-            panic!("TODO")
+            let page_id = self.next_page_id;
+            self.next_page_id += 1;
+
+            let mut buffer = Buffer::default();
+            buffer.page_id = PageId(page_id);
+            buffer.is_dirty.set(true);
+            let rc = Rc::new(buffer);
+
+            self.data.push(Rc::clone(&rc));
+            Ok(rc)
         }
 
         fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, bufferpool::Error> {
-            panic!("TODO")
+            let rc = &self.data[page_id.0 as usize];
+            Ok(Rc::clone(rc))
         }
         fn flush(&mut self) -> Result<(), bufferpool::Error> {
             Ok(())
@@ -290,7 +312,18 @@ mod tests {
     }
 
     #[test]
-    fn insert_test() {}
+    fn insert_test() {
+        let mut bufmgr = InfinityBuffer::new();
+        let btree = BTree::create(&mut bufmgr).unwrap();
+        let res1 = btree.insert(&mut bufmgr, &6u64.to_be_bytes(), b"world");
+        assert!(res1.is_ok());
+        let res2 = btree.insert(&mut bufmgr, &3u64.to_be_bytes(), b"hello");
+        assert!(res2.is_ok());
+        let res3 = btree.insert(&mut bufmgr, &8u64.to_be_bytes(), b"!");
+        assert!(res3.is_ok());
+        let res4 = btree.insert(&mut bufmgr, &4u64.to_be_bytes(), b",");
+        assert!(res4.is_ok());
+    }
     fn search_test() {}
 
     // TODO: これはここではない
