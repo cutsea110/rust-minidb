@@ -29,7 +29,7 @@ impl<'a, T: AsRef<[u8]>> Debug for Pretty<'a, T> {
             let bytes = elem.as_ref();
             match std::str::from_utf8(bytes) {
                 Ok(s) => {
-                    d.field(&format_args!("{:?} {:20x?}", s, bytes));
+                    d.field(&format_args!("{:?} {:02x?}", s, bytes));
                 }
                 Err(_) => {
                     d.field(&format_args!("{:02x?}", bytes));
