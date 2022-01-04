@@ -115,6 +115,14 @@ mod tests {
     }
 
     #[test]
+    fn decode_test() {
+        let mut enc1: &[u8] = &[b'\0', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8];
+        let mut dec1 = vec![];
+        decode(&mut enc1, &mut dec1);
+        assert_eq!(dec1.as_slice(), b"");
+    }
+
+    #[test]
     fn test() {
         let org1 = b"helloworld!memcmpable";
         let org2 = b"foobarbazhogehuga";
