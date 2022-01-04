@@ -5,7 +5,7 @@ use minidb::buffer::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::buffer::dao::entity::PageId;
 use minidb::executor::dao::accessmethod::{AccessMethod, Iterable};
 use minidb::storage::disk::DiskManager;
-use minidb::tuple;
+use minidb::util::tuple;
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("simple.rly")?;

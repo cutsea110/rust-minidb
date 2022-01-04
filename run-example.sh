@@ -12,3 +12,7 @@ cargo run --example btree-large --release
 cargo run --example btree-large-query
 
 cargo run --example simple-table-create
+cargo run --example simple-table-all
+cargo run --example simple-table-range
+cargo run --example simple-table-scan
+cargo run --example simple-table-exact

@@ -5,7 +5,7 @@ use crate::buffer::clocksweep::ClockSweepManager;
 use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::AccessMethod;
 use crate::storage::disk::DiskManager;
-use crate::tuple;
+use crate::util::tuple;
 
 #[derive(Debug)]
 pub struct SimpleTable {

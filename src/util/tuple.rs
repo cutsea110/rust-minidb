@@ -1,6 +1,6 @@
 use std::fmt::{self, Debug};
 
-use crate::memcmpable;
+use super::memcmpable;
 
 pub fn encode(elems: impl Iterator<Item = impl AsRef<[u8]>>, bytes: &mut Vec<u8>) {
     elems.for_each(|elem| {
