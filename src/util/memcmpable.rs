@@ -61,33 +61,28 @@ mod tests {
         let org1 = b"";
         let mut enc1 = vec![];
         encode(org1, &mut enc1);
-        assert_eq!(enc1.len(), 9);
+        assert_eq!(enc1.len(), encoded_size(org1.len()));
         assert_eq!(&enc1[..], &[b'\0', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]); // 合ってる?
 
         let org2 = b"1";
         let mut enc2 = vec![];
         encode(org2, &mut enc2);
-        assert_eq!(enc2.len(), 9);
+        assert_eq!(enc2.len(), encoded_size(org2.len()));
         assert_eq!(&enc2[..], &[b'1', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8]);
 
         let org3 = b"12345678";
         let mut enc3 = vec![];
         encode(org3, &mut enc3);
-        assert_eq!(enc3.len(), 9);
+        assert_eq!(enc3.len(), encoded_size(org3.len()));
         assert_eq!(
             &enc3[..],
             &[b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', 8u8]
         );
 
-        let org3 = b"123456789";
-        let mut enc3 = vec![];
-        encode(org3, &mut enc3);
-        assert_eq!(enc3.len(), 18);
-
         let org4 = b"123456789";
         let mut enc4 = vec![];
         encode(org4, &mut enc4);
-        assert_eq!(enc4.len(), 18);
+        assert_eq!(enc4.len(), encoded_size(org4.len()));
         assert_eq!(
             &enc4[..],
             &[
@@ -99,7 +94,7 @@ mod tests {
         let org5 = b"1234567890abcdef";
         let mut enc5 = vec![];
         encode(org5, &mut enc5);
-        assert_eq!(enc5.len(), 18);
+        assert_eq!(enc5.len(), encoded_size(org5.len()));
         assert_eq!(
             &enc5[..],
             &[
@@ -111,7 +106,7 @@ mod tests {
         let org6 = b"1234567890abcdefg";
         let mut enc6 = vec![];
         encode(org6, &mut enc6);
-        assert_eq!(enc6.len(), 27);
+        assert_eq!(enc6.len(), encoded_size(org6.len()));
         assert_eq!(
             &enc6[..],
             &[
