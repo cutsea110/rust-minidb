@@ -3,5 +3,5 @@ pub mod buffer;
 pub mod executor;
 pub mod storage;
 // pub mod query;
-pub mod table;
+pub mod rdb;
 pub mod util;
