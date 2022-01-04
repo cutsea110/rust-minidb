@@ -40,6 +40,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn encode_size_test() {
+        assert_eq!(encoded_size(0), ESCAPE_LENGTH);
+        assert_eq!(encoded_size(1), ESCAPE_LENGTH);
+        assert_eq!(encoded_size(8), 2 * ESCAPE_LENGTH);
+        assert_eq!(encoded_size(9), 2 * ESCAPE_LENGTH);
+        assert_eq!(encoded_size(15), 2 * ESCAPE_LENGTH);
+        assert_eq!(encoded_size(16), 3 * ESCAPE_LENGTH);
+    }
+
+    #[test]
     fn test() {
         let org1 = b"helloworld!memcmpable";
         let org2 = b"foobarbazhogehuga";
