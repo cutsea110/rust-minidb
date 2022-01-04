@@ -3,7 +3,14 @@ use std::cmp;
 const ESCAPE_LENGTH: usize = 9;
 
 pub fn encoded_size(len: usize) -> usize {
-    (len + (ESCAPE_LENGTH - 1)) / (ESCAPE_LENGTH - 1) * ESCAPE_LENGTH
+    let d = len / (ESCAPE_LENGTH - 1);
+    let m = len % (ESCAPE_LENGTH - 1);
+
+    if m == 0 {
+        cmp::max(1, d) * ESCAPE_LENGTH
+    } else {
+        (d + 1) * ESCAPE_LENGTH
+    }
 }
 
 pub fn encode(mut src: &[u8], dst: &mut Vec<u8>) {
@@ -43,10 +50,10 @@ mod tests {
     fn encode_size_test() {
         assert_eq!(encoded_size(0), ESCAPE_LENGTH);
         assert_eq!(encoded_size(1), ESCAPE_LENGTH);
-        assert_eq!(encoded_size(7), ESCAPE_LENGTH);
-        assert_eq!(encoded_size(8), 2 * ESCAPE_LENGTH);
-        assert_eq!(encoded_size(15), 2 * ESCAPE_LENGTH);
-        assert_eq!(encoded_size(16), 3 * ESCAPE_LENGTH);
+        assert_eq!(encoded_size(8), ESCAPE_LENGTH);
+        assert_eq!(encoded_size(9), 2 * ESCAPE_LENGTH);
+        assert_eq!(encoded_size(16), 2 * ESCAPE_LENGTH);
+        assert_eq!(encoded_size(17), 3 * ESCAPE_LENGTH);
     }
 
     #[test]
