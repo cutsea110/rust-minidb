@@ -16,3 +16,5 @@ cargo run --example simple-table-all
 cargo run --example simple-table-range
 cargo run --example simple-table-scan
 cargo run --example simple-table-exact
+
+cargo run --example simple-table-plan
