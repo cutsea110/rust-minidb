@@ -39,3 +39,49 @@ impl<'a, T: AsRef<[u8]>> Debug for Pretty<'a, T> {
         d.finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encode_test() {
+        let mut enc1 = vec![];
+        let org1: Vec<&[u8]> = vec![b"hello", b",", b"world", b"!"];
+        encode(org1.iter(), &mut enc1);
+        let expected = [
+            b'h', b'e', b'l', b'l', b'o', 0u8, 0u8, 0u8, 5u8, b',', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+            0u8, 1u8, b'w', b'o', b'r', b'l', b'd', 0u8, 0u8, 0u8, 5u8, b'!', 0u8, 0u8, 0u8, 0u8,
+            0u8, 0u8, 0u8, 1u8,
+        ];
+        assert_eq!(enc1.as_slice(), expected);
+    }
+
+    #[test]
+    fn decode_test() {
+        let mut dec1 = vec![];
+        let org1 = &[
+            b'h', b'e', b'l', b'l', b'o', 0u8, 0u8, 0u8, 5u8, b',', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+            0u8, 1u8, b'w', b'o', b'r', b'l', b'd', 0u8, 0u8, 0u8, 5u8, b'!', 0u8, 0u8, 0u8, 0u8,
+            0u8, 0u8, 0u8, 1u8,
+        ];
+        decode(org1, &mut dec1);
+        let expected: &[&[u8]] = &[b"hello", b",", b"world", b"!"];
+        assert_eq!(dec1.as_slice(), expected);
+    }
+
+    #[test]
+    fn fmt_for_pretty_test() {
+        let mut enc1 = vec![];
+        let org1: Vec<&[u8]> = vec![b"hello", b",", b"world", b"!"];
+        encode(org1.iter(), &mut enc1);
+
+        let mut dec1 = vec![];
+        decode(&enc1, &mut dec1);
+
+        assert_eq!(
+	    format!("{:?}", Pretty(&dec1)),
+	    "Tuple(\"hello\" [68, 65, 6c, 6c, 6f], \",\" [2c], \"world\" [77, 6f, 72, 6c, 64], \"!\" [21])",
+	);
+    }
+}
