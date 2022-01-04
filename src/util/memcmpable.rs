@@ -122,40 +122,8 @@ mod tests {
 
         let mut enc = vec![];
         encode(org1, &mut enc);
-        assert_eq!(enc.len(), 27); // org1's len is 21 => 9 * 3 = 27
-        assert_eq!(
-            &enc[..],
-            &[
-                b'h', b'e', b'l', b'l', b'o', b'w', b'o', b'r', 9u8, b'l', b'd', b'!', b'm', b'e',
-                b'm', b'c', b'm', 9u8, b'p', b'a', b'b', b'l', b'e', 0u8, 0u8, 0u8, 5u8
-            ]
-        );
         encode(org2, &mut enc);
-        assert_eq!(enc.len(), 54); // org1's encoded len is 27 plus org2's encoded len is 27 (org2's len is 17 (9 * 3 = 27)
-        assert_eq!(
-            &enc[..],
-            &[
-                b'h', b'e', b'l', b'l', b'o', b'w', b'o', b'r', 9u8, b'l', b'd', b'!', b'm', b'e',
-                b'm', b'c', b'm', 9u8, b'p', b'a', b'b', b'l', b'e', 0u8, 0u8, 0u8, 5u8, b'f',
-                b'o', b'o', b'b', b'a', b'r', b'b', b'a', 9u8, b'z', b'h', b'o', b'g', b'e', b'h',
-                b'u', b'g', 9u8, b'a', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8
-            ]
-        );
         encode(org3, &mut enc);
-        assert_eq!(
-            enc.len(),
-            63, // org3's encoded len is 8 (54 + 8 = 63)
-        );
-        assert_eq!(
-            &enc[..],
-            &[
-                b'h', b'e', b'l', b'l', b'o', b'w', b'o', b'r', 9u8, b'l', b'd', b'!', b'm', b'e',
-                b'm', b'c', b'm', 9u8, b'p', b'a', b'b', b'l', b'e', 0u8, 0u8, 0u8, 5u8, b'f',
-                b'o', b'o', b'b', b'a', b'r', b'b', b'a', 9u8, b'z', b'h', b'o', b'g', b'e', b'h',
-                b'u', b'g', 9u8, b'a', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8, b'c', b'h', b'a',
-                b'r', b'l', b'e', b'n', b'8', 8u8,
-            ]
-        );
 
         let mut rest = &enc[..];
 
