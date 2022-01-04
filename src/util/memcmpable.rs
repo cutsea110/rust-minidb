@@ -120,6 +120,40 @@ mod tests {
         let mut dec1 = vec![];
         decode(&mut enc1, &mut dec1);
         assert_eq!(dec1.as_slice(), b"");
+
+        let mut enc2: &[u8] = &[b'1', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8];
+        let mut dec2 = vec![];
+        decode(&mut enc2, &mut dec2);
+        assert_eq!(dec2.as_slice(), b"1");
+
+        let mut enc3: &[u8] = &[b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', 8u8];
+        let mut dec3 = vec![];
+        decode(&mut enc3, &mut dec3);
+        assert_eq!(dec3.as_slice(), b"12345678");
+
+        let mut enc4: &[u8] = &[
+            b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', 9u8, b'9', 0u8, 0u8, 0u8, 0u8, 0u8,
+            0u8, 0u8, 1u8,
+        ];
+        let mut dec4 = vec![];
+        decode(&mut enc4, &mut dec4);
+        assert_eq!(dec4.as_slice(), b"123456789");
+
+        let mut enc5: &[u8] = &[
+            b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', 9u8, b'9', b'0', b'a', b'b', b'c',
+            b'd', b'e', b'f', 8u8,
+        ];
+        let mut dec5 = vec![];
+        decode(&mut enc5, &mut dec5);
+        assert_eq!(dec5.as_slice(), b"1234567890abcdef");
+
+        let mut enc6: &[u8] = &[
+            b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', 9u8, b'9', b'0', b'a', b'b', b'c',
+            b'd', b'e', b'f', 9u8, b'g', 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8,
+        ];
+        let mut dec6 = vec![];
+        decode(&mut enc6, &mut dec6);
+        assert_eq!(dec6.as_slice(), b"1234567890abcdefg");
     }
 
     #[test]
