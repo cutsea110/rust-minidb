@@ -1,8 +1,8 @@
 use anyhow::Result;
 use md5::{Digest, Md5};
 
+use minidb::accessor::dao::accessmethod::AccessMethod;
 use minidb::buffer::dao::bufferpool::BufferPoolManager;
-use minidb::executor::dao::accessmethod::AccessMethod;
 
 use minidb::rdbms::{
     btree::BTree,

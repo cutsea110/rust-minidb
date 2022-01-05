@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use minidb::executor::dao::accessmethod::{AccessMethod, Iterable};
+use minidb::accessor::dao::accessmethod::{AccessMethod, Iterable};
 use minidb::storage::dao::entity::PageId;
 
 use minidb::rdbms::{

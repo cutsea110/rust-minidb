@@ -1,7 +1,7 @@
 use anyhow::Result;
 
+use minidb::accessor::dao::accessmethod::AccessMethod;
 use minidb::buffer::dao::bufferpool::BufferPoolManager;
-use minidb::executor::dao::accessmethod::AccessMethod;
 
 use minidb::rdbms::{
     btree::BTree,
