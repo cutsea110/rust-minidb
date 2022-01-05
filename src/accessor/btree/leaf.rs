@@ -3,9 +3,10 @@ use std::mem::size_of;
 use zerocopy::{AsBytes, ByteSlice, ByteSliceMut, FromBytes, LayoutVerified};
 
 use super::Pair;
-use crate::accessor::bsearch::binary_search_by;
-use crate::accessor::slotted::{self, Slotted};
 use crate::buffer::dao::entity::PageId;
+
+use super::bsearch::binary_search_by;
+use super::slotted::{self, Slotted};
 
 #[derive(Debug, FromBytes, AsBytes)]
 #[repr(C)]

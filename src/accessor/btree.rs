@@ -12,9 +12,11 @@ use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
 
 mod branch;
+mod bsearch;
 mod leaf;
 mod meta;
 mod node;
+mod slotted;
 
 #[derive(Serialize, Deserialize)]
 pub struct Pair<'a> {
