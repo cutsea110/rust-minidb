@@ -1,7 +1,7 @@
 use anyhow::Result;
 use md5::{Digest, Md5};
 
-use minidb::accessor::dao::accessmethod::AccessMethod;
+use minidb::accessor::method::AccessMethod;
 use minidb::buffer::manager::BufferPoolManager;
 
 use minidb::rdbms::{

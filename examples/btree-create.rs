@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use minidb::accessor::dao::accessmethod::AccessMethod;
+use minidb::accessor::method::AccessMethod;
 use minidb::buffer::manager::BufferPoolManager;
 
 use minidb::rdbms::{
