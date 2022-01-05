@@ -1,4 +1,4 @@
-use crate::storage::dao::entity::PageId;
+use crate::storage::entity::PageId;
 use std::cell::{Cell, RefCell};
 
 pub const PAGE_SIZE: usize = 4096;

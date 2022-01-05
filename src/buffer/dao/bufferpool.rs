@@ -1,5 +1,5 @@
 use super::entity::Buffer;
-use crate::storage::dao::entity::PageId;
+use crate::storage::entity::PageId;
 
 use std::io;
 use std::rc::Rc;

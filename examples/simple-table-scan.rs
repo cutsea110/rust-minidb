@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use minidb::accessor::dao::accessmethod::{AccessMethod, Iterable};
-use minidb::storage::dao::entity::PageId;
+use minidb::storage::entity::PageId;
 
 use minidb::rdbms::{
     btree::{BTree, SearchMode},

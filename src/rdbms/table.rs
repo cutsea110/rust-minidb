@@ -5,7 +5,7 @@ use super::util::tuple;
 use crate::accessor::dao::accessmethod::AccessMethod;
 use crate::buffer::dao::bufferpool::BufferPoolManager;
 use crate::sql::ddl::dao::table::{Table, UniqueIndex};
-use crate::storage::dao::entity::PageId;
+use crate::storage::entity::PageId;
 
 #[derive(Debug)]
 pub struct SimpleTable {

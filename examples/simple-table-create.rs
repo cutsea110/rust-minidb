@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use minidb::buffer::dao::bufferpool::BufferPoolManager;
 use minidb::sql::ddl::dao::table::Table;
-use minidb::storage::dao::entity::PageId;
+use minidb::storage::entity::PageId;
 
 use minidb::rdbms::{
     clocksweep::{BufferPool, ClockSweepManager},

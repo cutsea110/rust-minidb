@@ -3,7 +3,7 @@ use std::io::{prelude::*, Result, SeekFrom};
 use std::path::Path;
 
 use crate::buffer::dao::entity::PAGE_SIZE; // TODO: コンストラクタから貰いたい
-use crate::storage::dao::{entity::PageId, storage::*};
+use crate::storage::{entity::PageId, manager::*};
 
 pub struct DiskManager {
     // ヒープファイルのファイルディスクリプタ

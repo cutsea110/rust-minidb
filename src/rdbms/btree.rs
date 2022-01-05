@@ -9,7 +9,7 @@ use zerocopy::{AsBytes, ByteSlice};
 
 use crate::accessor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
 use crate::buffer::dao::{bufferpool::BufferPoolManager, entity::Buffer};
-use crate::storage::dao::entity::PageId;
+use crate::storage::entity::PageId;
 
 mod branch;
 mod bsearch;
@@ -277,7 +277,7 @@ mod tests {
         bufferpool::{self, BufferPoolManager},
         entity::Buffer,
     };
-    use crate::storage::dao::entity::PageId;
+    use crate::storage::entity::PageId;
 
     #[derive(Debug, PartialEq)]
     struct InfinityBuffer {

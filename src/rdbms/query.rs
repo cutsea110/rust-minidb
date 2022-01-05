@@ -4,7 +4,7 @@ use super::util::tuple;
 use crate::accessor::dao::accessmethod::{AccessMethod, Iterable};
 use crate::buffer::dao::bufferpool::BufferPoolManager;
 use crate::sql::dml::dao::{entity::Tuple, query::*};
-use crate::storage::dao::entity::PageId;
+use crate::storage::entity::PageId;
 
 use super::btree::{self, BTree, SearchMode};
 

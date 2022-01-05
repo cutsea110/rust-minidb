@@ -1,6 +1,6 @@
 use zerocopy::{AsBytes, ByteSlice, FromBytes, LayoutVerified};
 
-use crate::storage::dao::entity::PageId;
+use crate::storage::entity::PageId;
 
 #[derive(Debug, FromBytes, AsBytes)]
 #[repr(C)]
