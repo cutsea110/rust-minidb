@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::accessor::btree::BTree;
+use super::btree::BTree;
 use crate::accessor::dao::bufferpool::BufferPoolManager;
 use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::AccessMethod;

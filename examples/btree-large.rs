@@ -1,9 +1,9 @@
 use anyhow::Result;
 use md5::{Digest, Md5};
 
-use minidb::accessor::btree::BTree;
 use minidb::accessor::dao::bufferpool::BufferPoolManager;
 use minidb::executor::dao::accessmethod::AccessMethod;
+use minidb::rdbms::btree::BTree;
 use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::rdbms::disk::DiskManager;
 

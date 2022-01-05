@@ -1,10 +1,10 @@
 use anyhow::Result;
 
 use minidb::buffer::dao::entity::PageId;
-use minidb::executor::query::*;
 use minidb::rdb::dml::dao::query::PlanNode;
 use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::rdbms::disk::DiskManager;
+use minidb::rdbms::query::*;
 use minidb::util::tuple;
 
 fn main() -> Result<()> {

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use zerocopy::{AsBytes, ByteSlice};
 
-use super::dao::{bufferpool::BufferPoolManager, entity::Buffer};
+use crate::accessor::dao::{bufferpool::BufferPoolManager, entity::Buffer};
 use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
 
