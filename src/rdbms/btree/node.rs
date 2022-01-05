@@ -50,6 +50,7 @@ impl<B: ByteSlice> Body<B> {
 }
 
 impl<B> Body<B> {
+    #[allow(dead_code)]
     pub fn try_into_leaf(self) -> Result<Leaf<B>, Self> {
         match self {
             Body::Leaf(leaf) => Ok(leaf),

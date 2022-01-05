@@ -193,11 +193,11 @@ mod tests {
             self.history.push(Op::Alloc(pid));
             pid
         }
-        fn read_page_data(&mut self, page_id: PageId, data: &mut [u8]) -> Result<()> {
+        fn read_page_data(&mut self, page_id: PageId, _data: &mut [u8]) -> Result<()> {
             self.history.push(Op::Read(page_id));
             Ok(())
         }
-        fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> Result<()> {
+        fn write_page_data(&mut self, page_id: PageId, _data: &[u8]) -> Result<()> {
             self.history.push(Op::Write(page_id));
             Ok(())
         }
