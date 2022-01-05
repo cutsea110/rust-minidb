@@ -1,10 +1,10 @@
 use anyhow::Result;
 
 use crate::accessor::btree::BTree;
-use crate::buffer::clocksweep::ClockSweepManager;
+use crate::accessor::dao::bufferpool::BufferPoolManager;
 use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::AccessMethod;
-use crate::storage::disk::DiskManager;
+use crate::rdb::ddl::dao::table::{self, UIdx};
 use crate::util::tuple;
 
 #[derive(Debug)]
@@ -13,18 +13,14 @@ pub struct SimpleTable {
     pub num_key_elems: usize,
 }
 
-impl SimpleTable {
-    pub fn create(&mut self, bufmgr: &mut ClockSweepManager<DiskManager>) -> Result<()> {
+impl<T: BufferPoolManager> table::Rel<T> for SimpleTable {
+    fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
         Ok(())
     }
 
-    pub fn insert(
-        &self,
-        bufmgr: &mut ClockSweepManager<DiskManager>,
-        record: &[&[u8]],
-    ) -> Result<()> {
+    fn insert(&self, bufmgr: &mut T, record: &[&[u8]]) -> Result<()> {
         let btree = BTree::new(self.meta_page_id);
         let mut key = vec![];
         tuple::encode(record[..self.num_key_elems].iter(), &mut key);
@@ -42,8 +38,8 @@ pub struct Table {
     pub unique_indices: Vec<UniqueIndex>,
 }
 
-impl Table {
-    pub fn create(&mut self, bufmgr: &mut ClockSweepManager<DiskManager>) -> Result<()> {
+impl<T: BufferPoolManager> table::Rel<T> for Table {
+    fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
         for unique_index in &mut self.unique_indices {
@@ -52,11 +48,7 @@ impl Table {
         Ok(())
     }
 
-    pub fn insert(
-        &self,
-        bufmgr: &mut ClockSweepManager<DiskManager>,
-        record: &[&[u8]],
-    ) -> Result<()> {
+    fn insert(&self, bufmgr: &mut T, record: &[&[u8]]) -> Result<()> {
         let btree = BTree::new(self.meta_page_id);
         let mut key = vec![];
         tuple::encode(record[..self.num_key_elems].iter(), &mut key);
@@ -76,19 +68,14 @@ pub struct UniqueIndex {
     pub skey: Vec<usize>,
 }
 
-impl UniqueIndex {
-    pub fn create(&mut self, bufmgr: &mut ClockSweepManager<DiskManager>) -> Result<()> {
+impl<T: BufferPoolManager> table::UIdx<T> for UniqueIndex {
+    fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
         Ok(())
     }
 
-    pub fn insert(
-        &self,
-        bufmgr: &mut ClockSweepManager<DiskManager>,
-        pkey: &[u8],
-        record: &[impl AsRef<[u8]>],
-    ) -> Result<()> {
+    fn insert(&self, bufmgr: &mut T, pkey: &[u8], record: &[impl AsRef<[u8]>]) -> Result<()> {
         let btree = BTree::new(self.meta_page_id);
         let mut skey = vec![];
         tuple::encode(
