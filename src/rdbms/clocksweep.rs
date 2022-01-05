@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
-use crate::accessor::dao::{bufferpool::*, entity::Buffer};
+use crate::buffer::dao::{bufferpool::*, entity::Buffer};
 use crate::storage::dao::{entity::PageId, storage::*};
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
@@ -159,7 +159,7 @@ impl<T: StorageManager> BufferPoolManager for ClockSweepManager<T> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        accessor::dao::entity::PAGE_SIZE,
+        buffer::dao::entity::PAGE_SIZE,
         storage::dao::{entity::PageId, storage::StorageManager},
     };
     use std::io::Result;

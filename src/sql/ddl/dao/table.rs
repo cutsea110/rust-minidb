@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::accessor::dao::bufferpool::BufferPoolManager;
+use crate::buffer::dao::bufferpool::BufferPoolManager;
 
 pub trait Table<T: BufferPoolManager> {
     fn create(&mut self, bufmgr: &mut T) -> Result<()>;

@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::accessor::dao::bufferpool::{self, BufferPoolManager};
+use crate::buffer::dao::bufferpool::{self, BufferPoolManager};
 
 #[derive(Debug, Error)]
 pub enum Error {
