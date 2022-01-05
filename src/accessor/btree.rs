@@ -201,10 +201,10 @@ impl<T: BufferPoolManager> AccessMethod<T> for BTree {
     fn search(
         &self,
         bufmgr: &mut T,
-        search_mode: Self::SearchOption,
+        search_option: Self::SearchOption,
     ) -> Result<Self::Iterable, Error> {
         let root_page = self.fetch_root_page(bufmgr)?;
-        self.search_internal(bufmgr, root_page, search_mode)
+        self.search_internal(bufmgr, root_page, search_option)
     }
 
     fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error> {
