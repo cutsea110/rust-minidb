@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use minidb::accessor::btree::BTree;
 use minidb::accessor::dao::bufferpool::BufferPoolManager;
-use minidb::buffer::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::executor::dao::accessmethod::AccessMethod;
+use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::rdbms::disk::DiskManager;
 
 fn main() -> Result<()> {

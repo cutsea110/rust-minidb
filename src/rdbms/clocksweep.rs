@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
-use super::dao::{entity::PageId, storage::*};
 use crate::accessor::dao::{bufferpool::*, entity::Buffer};
+use crate::buffer::dao::{entity::PageId, storage::*};
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct BufferId(usize);

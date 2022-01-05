@@ -90,9 +90,10 @@ mod tests {
 
     #[test]
     fn integration_test() {
+        use super::super::clocksweep::*;
         use super::*;
+
         use crate::accessor::dao::bufferpool::*;
-        use crate::buffer::clocksweep::*;
         use tempfile::tempfile;
 
         let mut hello = Vec::with_capacity(PAGE_SIZE);
