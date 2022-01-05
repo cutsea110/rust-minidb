@@ -2,7 +2,7 @@
 pub mod ddl;
 
 // Data Manipulation Language
-// pub mod dml;
+pub mod dml;
 
 // Data Control Language
 // pub mod dcl;
