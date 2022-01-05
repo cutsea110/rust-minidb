@@ -3,11 +3,11 @@ use anyhow::Result;
 use crate::accessor::dao::bufferpool::BufferPoolManager;
 use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::{AccessMethod, Iterable};
+use crate::rdb::dml::dao::{entity::Tuple, query::*};
 use crate::util::tuple;
 
 use crate::accessor::btree::{self, BTree, SearchMode};
 
-pub type Tuple = Vec<Vec<u8>>;
 pub type TupleSlice<'a> = &'a [Vec<u8>];
 
 pub enum TupleSearchMode<'a> {
@@ -26,16 +26,6 @@ impl<'a> TupleSearchMode<'a> {
             }
         }
     }
-}
-
-pub trait Executor<T: BufferPoolManager> {
-    fn next(&mut self, bufmgr: &mut T) -> Result<Option<Tuple>>;
-}
-
-pub type BoxExecutor<'a, T> = Box<dyn Executor<T> + 'a>;
-
-pub trait PlanNode<T: BufferPoolManager> {
-    fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>>;
 }
 
 pub struct SeqScan<'a> {
