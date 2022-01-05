@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use minidb::buffer::manager::BufferPoolManager;
-use minidb::sql::ddl::dao::table::Table;
+use minidb::sql::ddl::table::Table;
 use minidb::storage::entity::PageId;
 
 use minidb::rdbms::{

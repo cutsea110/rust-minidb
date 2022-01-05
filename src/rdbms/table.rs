@@ -4,7 +4,7 @@ use super::btree::BTree;
 use super::util::tuple;
 use crate::accessor::method::AccessMethod;
 use crate::buffer::manager::BufferPoolManager;
-use crate::sql::ddl::dao::table::{Table, UniqueIndex};
+use crate::sql::ddl::table::{Table, UniqueIndex};
 use crate::storage::entity::PageId;
 
 #[derive(Debug)]

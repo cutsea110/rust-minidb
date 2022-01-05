@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use minidb::sql::dml::dao::query::PlanNode;
+use minidb::sql::dml::query::PlanNode;
 use minidb::storage::entity::PageId;
 
 use minidb::rdbms::{
