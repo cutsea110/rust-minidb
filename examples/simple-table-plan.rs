@@ -5,7 +5,7 @@ use minidb::rdb::dml::dao::query::PlanNode;
 use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::rdbms::disk::DiskManager;
 use minidb::rdbms::query::*;
-use minidb::util::tuple;
+use minidb::rdbms::util::tuple;
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("simple.rly")?;

@@ -12,3 +12,6 @@ pub mod table;
 
 // B+Tree を使った Planner + Executor の具体的実装
 pub mod query;
+
+// ユーティリティ
+pub mod util;
