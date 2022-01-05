@@ -1,13 +1,13 @@
 use thiserror::Error;
 
-use crate::buffer::dao::bufferpool::{self, BufferPoolManager};
+use crate::buffer::manager::{self, BufferPoolManager};
 
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("duplicate key")]
     DuplicateKey,
     #[error(transparent)]
-    Buffer(#[from] bufferpool::Error),
+    Buffer(#[from] manager::Error),
 }
 
 pub trait Iterable<T: BufferPoolManager> {

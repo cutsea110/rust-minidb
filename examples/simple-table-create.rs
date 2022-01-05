@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use minidb::buffer::dao::bufferpool::BufferPoolManager;
+use minidb::buffer::manager::BufferPoolManager;
 use minidb::sql::ddl::dao::table::Table;
 use minidb::storage::entity::PageId;
 

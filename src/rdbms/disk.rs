@@ -2,7 +2,7 @@ use std::fs::{File, OpenOptions};
 use std::io::{prelude::*, Result, SeekFrom};
 use std::path::Path;
 
-use crate::buffer::dao::entity::PAGE_SIZE; // TODO: コンストラクタから貰いたい
+use crate::buffer::entity::PAGE_SIZE; // TODO: コンストラクタから貰いたい
 use crate::storage::{entity::PageId, manager::*};
 
 pub struct DiskManager {
@@ -93,7 +93,7 @@ mod tests {
         use super::super::clocksweep::*;
         use super::*;
 
-        use crate::buffer::dao::bufferpool::*;
+        use crate::buffer::manager::*;
         use tempfile::tempfile;
 
         let mut hello = Vec::with_capacity(PAGE_SIZE);

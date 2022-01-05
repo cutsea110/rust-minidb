@@ -3,7 +3,7 @@ use anyhow::Result;
 use super::btree::BTree;
 use super::util::tuple;
 use crate::accessor::dao::accessmethod::AccessMethod;
-use crate::buffer::dao::bufferpool::BufferPoolManager;
+use crate::buffer::manager::BufferPoolManager;
 use crate::sql::ddl::dao::table::{Table, UniqueIndex};
 use crate::storage::entity::PageId;
 

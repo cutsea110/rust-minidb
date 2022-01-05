@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use super::entity::Tuple;
-use crate::buffer::dao::bufferpool::BufferPoolManager;
+use crate::buffer::manager::BufferPoolManager;
 
 pub trait Executor<T: BufferPoolManager> {
     fn next(&mut self, bufmgr: &mut T) -> Result<Option<Tuple>>;

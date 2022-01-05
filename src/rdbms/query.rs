@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use super::util::tuple;
 use crate::accessor::dao::accessmethod::{AccessMethod, Iterable};
-use crate::buffer::dao::bufferpool::BufferPoolManager;
+use crate::buffer::manager::BufferPoolManager;
 use crate::sql::dml::dao::{entity::Tuple, query::*};
 use crate::storage::entity::PageId;
 

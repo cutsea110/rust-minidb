@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use zerocopy::{AsBytes, ByteSlice};
 
 use crate::accessor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
-use crate::buffer::dao::{bufferpool::BufferPoolManager, entity::Buffer};
+use crate::buffer::{entity::Buffer, manager::BufferPoolManager};
 use crate::storage::entity::PageId;
 
 mod branch;
@@ -273,9 +273,9 @@ mod tests {
     use std::rc::Rc;
 
     use super::*;
-    use crate::buffer::dao::{
-        bufferpool::{self, BufferPoolManager},
+    use crate::buffer::{
         entity::Buffer,
+        manager::{self, BufferPoolManager},
     };
     use crate::storage::entity::PageId;
 
@@ -295,7 +295,7 @@ mod tests {
     }
 
     impl BufferPoolManager for InfinityBuffer {
-        fn create_page(&mut self) -> Result<Rc<Buffer>, bufferpool::Error> {
+        fn create_page(&mut self) -> Result<Rc<Buffer>, manager::Error> {
             let page_id = self.next_page_id;
             self.next_page_id += 1;
 
@@ -308,11 +308,11 @@ mod tests {
             Ok(rc)
         }
 
-        fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, bufferpool::Error> {
+        fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, manager::Error> {
             let rc = &self.data[page_id.0 as usize];
             Ok(Rc::clone(rc))
         }
-        fn flush(&mut self) -> Result<(), bufferpool::Error> {
+        fn flush(&mut self) -> Result<(), manager::Error> {
             Ok(())
         }
     }
