@@ -4,7 +4,7 @@ use crate::accessor::btree::BTree;
 use crate::accessor::dao::bufferpool::BufferPoolManager;
 use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::AccessMethod;
-use crate::rdb::ddl::dao::table::{self, UIdx};
+use crate::rdb::ddl::dao::table::{Table, UniqueIndex};
 use crate::util::tuple;
 
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub struct SimpleTable {
     pub num_key_elems: usize,
 }
 
-impl<T: BufferPoolManager> table::Rel<T> for SimpleTable {
+impl<T: BufferPoolManager> Table<T> for SimpleTable {
     fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
@@ -32,13 +32,13 @@ impl<T: BufferPoolManager> table::Rel<T> for SimpleTable {
 }
 
 #[derive(Debug)]
-pub struct Table {
+pub struct UIdxTable {
     pub meta_page_id: PageId,
     pub num_key_elems: usize,
-    pub unique_indices: Vec<UniqueIndex>,
+    pub unique_indices: Vec<UIndex>,
 }
 
-impl<T: BufferPoolManager> table::Rel<T> for Table {
+impl<T: BufferPoolManager> Table<T> for UIdxTable {
     fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
@@ -63,12 +63,12 @@ impl<T: BufferPoolManager> table::Rel<T> for Table {
 }
 
 #[derive(Debug)]
-pub struct UniqueIndex {
+pub struct UIndex {
     pub meta_page_id: PageId,
     pub skey: Vec<usize>,
 }
 
-impl<T: BufferPoolManager> table::UIdx<T> for UniqueIndex {
+impl<T: BufferPoolManager> UniqueIndex<T> for UIndex {
     fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
