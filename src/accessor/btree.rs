@@ -9,7 +9,7 @@ use zerocopy::{AsBytes, ByteSlice};
 
 use crate::accessor::dao::{bufferpool::BufferPoolManager, entity::Buffer};
 use crate::buffer::dao::entity::PageId;
-use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable};
+use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
 
 mod branch;
 mod leaf;
@@ -53,6 +53,8 @@ impl SearchMode {
         }
     }
 }
+
+impl SearchOption for SearchMode {}
 
 pub struct BTree {
     pub meta_page_id: PageId,
