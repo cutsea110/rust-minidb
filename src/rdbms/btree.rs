@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use zerocopy::{AsBytes, ByteSlice};
 
 use crate::accessor::dao::{bufferpool::BufferPoolManager, entity::Buffer};
-use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::{AccessMethod, Error, Iterable, SearchOption};
+use crate::storage::dao::entity::PageId;
 
 mod branch;
 mod bsearch;
@@ -275,7 +275,7 @@ mod tests {
     use super::*;
     use crate::accessor::dao::bufferpool::{self, BufferPoolManager};
     use crate::accessor::dao::entity::Buffer;
-    use crate::buffer::dao::entity::PageId;
+    use crate::storage::dao::entity::PageId;
 
     #[derive(Debug, PartialEq)]
     struct InfinityBuffer {

@@ -3,7 +3,7 @@ use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 
 use crate::accessor::dao::{bufferpool::*, entity::Buffer};
-use crate::buffer::dao::{entity::PageId, storage::*};
+use crate::storage::dao::{entity::PageId, storage::*};
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct BufferId(usize);
@@ -160,7 +160,7 @@ impl<T: StorageManager> BufferPoolManager for ClockSweepManager<T> {
 mod tests {
     use crate::{
         accessor::dao::entity::PAGE_SIZE,
-        buffer::dao::{entity::PageId, storage::StorageManager},
+        storage::dao::{entity::PageId, storage::StorageManager},
     };
     use std::io::Result;
 

@@ -3,9 +3,9 @@ use anyhow::Result;
 use super::btree::BTree;
 use super::util::tuple;
 use crate::accessor::dao::bufferpool::BufferPoolManager;
-use crate::buffer::dao::entity::PageId;
 use crate::executor::dao::accessmethod::AccessMethod;
 use crate::sql::ddl::dao::table::{Table, UniqueIndex};
+use crate::storage::dao::entity::PageId;
 
 #[derive(Debug)]
 pub struct SimpleTable {
