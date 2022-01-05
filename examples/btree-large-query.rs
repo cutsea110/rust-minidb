@@ -4,7 +4,7 @@ use minidb::accessor::btree::{BTree, SearchMode};
 use minidb::buffer::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::buffer::dao::entity::PageId;
 use minidb::executor::dao::accessmethod::{AccessMethod, Iterable};
-use minidb::storage::disk::DiskManager;
+use minidb::rdbms::disk::DiskManager;
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("large.btr")?;

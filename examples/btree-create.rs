@@ -4,7 +4,7 @@ use minidb::accessor::btree::BTree;
 use minidb::accessor::dao::bufferpool::BufferPoolManager;
 use minidb::buffer::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::executor::dao::accessmethod::AccessMethod;
-use minidb::storage::disk::DiskManager;
+use minidb::rdbms::disk::DiskManager;
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("test.btr")?;
