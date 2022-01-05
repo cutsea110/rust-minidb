@@ -1,11 +1,14 @@
 use anyhow::Result;
 
 use minidb::buffer::dao::entity::PageId;
-use minidb::rdb::dml::dao::query::PlanNode;
-use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
-use minidb::rdbms::disk::DiskManager;
-use minidb::rdbms::query::*;
-use minidb::rdbms::util::tuple;
+use minidb::sql::dml::dao::query::PlanNode;
+
+use minidb::rdbms::{
+    clocksweep::{BufferPool, ClockSweepManager},
+    disk::DiskManager,
+    query::*,
+    util::tuple,
+};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("simple.rly")?;

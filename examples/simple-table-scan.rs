@@ -2,10 +2,13 @@ use anyhow::Result;
 
 use minidb::buffer::dao::entity::PageId;
 use minidb::executor::dao::accessmethod::{AccessMethod, Iterable};
-use minidb::rdbms::btree::{BTree, SearchMode};
-use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
-use minidb::rdbms::disk::DiskManager;
-use minidb::rdbms::util::tuple;
+
+use minidb::rdbms::{
+    btree::{BTree, SearchMode},
+    clocksweep::{BufferPool, ClockSweepManager},
+    disk::DiskManager,
+    util::tuple,
+};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("simple.rly")?;

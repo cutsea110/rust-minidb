@@ -2,9 +2,12 @@ use anyhow::Result;
 
 use minidb::accessor::dao::bufferpool::BufferPoolManager;
 use minidb::executor::dao::accessmethod::AccessMethod;
-use minidb::rdbms::btree::BTree;
-use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
-use minidb::rdbms::disk::DiskManager;
+
+use minidb::rdbms::{
+    btree::BTree,
+    clocksweep::{BufferPool, ClockSweepManager},
+    disk::DiskManager,
+};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("test.btr")?;

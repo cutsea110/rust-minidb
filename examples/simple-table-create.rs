@@ -2,10 +2,13 @@ use anyhow::Result;
 
 use minidb::accessor::dao::bufferpool::BufferPoolManager;
 use minidb::buffer::dao::entity::PageId;
-use minidb::rdb::ddl::dao::table::Table;
-use minidb::rdbms::clocksweep::{BufferPool, ClockSweepManager};
-use minidb::rdbms::disk::DiskManager;
-use minidb::rdbms::table::SimpleTable;
+use minidb::sql::ddl::dao::table::Table;
+
+use minidb::rdbms::{
+    clocksweep::{BufferPool, ClockSweepManager},
+    disk::DiskManager,
+    table::SimpleTable,
+};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("simple.rly")?;
