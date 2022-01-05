@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use minidb::buffer::clocksweep::{BufferPool, ClockSweepManager};
 use minidb::buffer::dao::entity::PageId;
-use minidb::query::*;
+use minidb::executor::query::*;
 use minidb::rdb::dml::dao::query::PlanNode;
 use minidb::storage::disk::DiskManager;
 use minidb::util::tuple;
