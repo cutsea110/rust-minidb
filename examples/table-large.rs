@@ -9,15 +9,14 @@ use minidb::storage::entity::PageId;
 const NUM_ROWS: u32 = 10_000_000;
 
 use minidb::rdbms::{
-    clocksweep::{BufferPool, ClockSweepManager},
+    clocksweep::ClockSweepManager,
     disk::DiskManager,
     table::{Table, UniqueIndex},
 };
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("table_large.rly")?;
-    let pool = BufferPool::new(1_000_000);
-    let mut bufmgr = ClockSweepManager::new(disk, pool);
+    let mut bufmgr = ClockSweepManager::new(disk, 1_000_000);
 
     let mut table = Table {
         meta_page_id: PageId(0),

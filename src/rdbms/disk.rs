@@ -104,8 +104,7 @@ mod tests {
         world.resize(PAGE_SIZE, 0);
 
         let disk = DiskManager::new(tempfile().unwrap()).unwrap();
-        let pool = BufferPool::new(1);
-        let mut bufmgr = ClockSweepManager::new(disk, pool);
+        let mut bufmgr = ClockSweepManager::new(disk, 1);
         let page1_id = {
             let buffer = bufmgr.create_page().unwrap();
             assert!(bufmgr.create_page().is_err());

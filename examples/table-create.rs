@@ -5,15 +5,14 @@ use minidb::sql::ddl::table::Table as ITable;
 use minidb::storage::entity::PageId;
 
 use minidb::rdbms::{
-    clocksweep::{BufferPool, ClockSweepManager},
+    clocksweep::ClockSweepManager,
     disk::DiskManager,
     table::{Table, UniqueIndex},
 };
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("table.rly")?;
-    let pool = BufferPool::new(10);
-    let mut bufmgr = ClockSweepManager::new(disk, pool);
+    let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     let mut table = Table {
         meta_page_id: PageId(0),

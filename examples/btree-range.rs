@@ -5,14 +5,13 @@ use minidb::storage::entity::PageId;
 
 use minidb::rdbms::{
     btree::{BTree, SearchMode},
-    clocksweep::{BufferPool, ClockSweepManager},
+    clocksweep::ClockSweepManager,
     disk::DiskManager,
 };
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("test.btr")?;
-    let pool = BufferPool::new(10);
-    let mut bufmgr = ClockSweepManager::new(disk, pool);
+    let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     let btree = BTree::new(PageId(0));
     let mut iter = btree.search(&mut bufmgr, SearchMode::Key(b"Gifu".to_vec()))?;

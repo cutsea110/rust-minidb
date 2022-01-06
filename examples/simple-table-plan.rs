@@ -3,17 +3,11 @@ use anyhow::Result;
 use minidb::sql::dml::query::PlanNode;
 use minidb::storage::entity::PageId;
 
-use minidb::rdbms::{
-    clocksweep::{BufferPool, ClockSweepManager},
-    disk::DiskManager,
-    query::*,
-    util::tuple,
-};
+use minidb::rdbms::{clocksweep::ClockSweepManager, disk::DiskManager, query::*, util::tuple};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("simple.rly")?;
-    let pool = BufferPool::new(10);
-    let mut bufmgr = ClockSweepManager::new(disk, pool);
+    let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     let plan = Filter {
         cond: &|record| record[1].as_slice() < b"Dave",

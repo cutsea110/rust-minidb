@@ -9,12 +9,12 @@ use crate::storage::{entity::PageId, manager::*};
 pub struct BufferId(usize);
 
 #[derive(Debug, Default)]
-pub struct Frame {
+struct Frame {
     usage_count: u64,
     buffer: Rc<Buffer>,
 }
 
-pub struct BufferPool {
+struct BufferPool {
     buffers: Vec<Frame>,
     next_victim_id: BufferId,
 }
@@ -83,7 +83,8 @@ pub struct ClockSweepManager<T: StorageManager> {
 }
 
 impl<T: StorageManager> ClockSweepManager<T> {
-    pub fn new(disk: T, pool: BufferPool) -> Self {
+    pub fn new(disk: T, pool_size: usize) -> Self {
+        let pool = BufferPool::new(pool_size);
         let page_table = HashMap::new();
         Self {
             disk,
@@ -212,8 +213,7 @@ mod tests {
         use super::*;
 
         let mock = TraceStorage::new();
-        let pool = BufferPool::new(1);
-        let mut bufmgr = ClockSweepManager::new(mock, pool);
+        let mut bufmgr = ClockSweepManager::new(mock, 1);
         {
             let res = bufmgr.create_page();
             assert!(res.is_ok());
@@ -249,8 +249,7 @@ mod tests {
         use super::*;
 
         let mock = TraceStorage::new();
-        let pool = BufferPool::new(1);
-        let mut bufmgr = ClockSweepManager::new(mock, pool);
+        let mut bufmgr = ClockSweepManager::new(mock, 1);
         {
             let res = bufmgr.fetch_page(PageId(1));
             assert!(res.is_ok());
@@ -312,8 +311,7 @@ mod tests {
         use super::*;
 
         let mock = TraceStorage::new();
-        let pool = BufferPool::new(3);
-        let mut bufmgr = ClockSweepManager::new(mock, pool);
+        let mut bufmgr = ClockSweepManager::new(mock, 3);
         {
             let res = bufmgr.flush();
             assert!(res.is_ok());

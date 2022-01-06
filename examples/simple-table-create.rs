@@ -4,16 +4,11 @@ use minidb::buffer::manager::BufferPoolManager;
 use minidb::sql::ddl::table::Table;
 use minidb::storage::entity::PageId;
 
-use minidb::rdbms::{
-    clocksweep::{BufferPool, ClockSweepManager},
-    disk::DiskManager,
-    table::SimpleTable,
-};
+use minidb::rdbms::{clocksweep::ClockSweepManager, disk::DiskManager, table::SimpleTable};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("simple.rly")?;
-    let pool = BufferPool::new(10);
-    let mut bufmgr = ClockSweepManager::new(disk, pool);
+    let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     let mut table = SimpleTable {
         meta_page_id: PageId(0),

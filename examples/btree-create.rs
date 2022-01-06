@@ -3,16 +3,11 @@ use anyhow::Result;
 use minidb::accessor::method::AccessMethod;
 use minidb::buffer::manager::BufferPoolManager;
 
-use minidb::rdbms::{
-    btree::BTree,
-    clocksweep::{BufferPool, ClockSweepManager},
-    disk::DiskManager,
-};
+use minidb::rdbms::{btree::BTree, clocksweep::ClockSweepManager, disk::DiskManager};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("test.btr")?;
-    let pool = BufferPool::new(10);
-    let mut bufmgr = ClockSweepManager::new(disk, pool);
+    let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     let btree = BTree::create(&mut bufmgr)?;
 

@@ -4,18 +4,13 @@ use md5::{Digest, Md5};
 use minidb::accessor::method::AccessMethod;
 use minidb::buffer::manager::BufferPoolManager;
 
-use minidb::rdbms::{
-    btree::BTree,
-    clocksweep::{BufferPool, ClockSweepManager},
-    disk::DiskManager,
-};
+use minidb::rdbms::{btree::BTree, clocksweep::ClockSweepManager, disk::DiskManager};
 
 const NUM_PAIRS: u32 = 1_000_000;
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("large.btr")?;
-    let pool = BufferPool::new(100);
-    let mut bufmgr = ClockSweepManager::new(disk, pool);
+    let mut bufmgr = ClockSweepManager::new(disk, 100);
 
     let btree = BTree::create(&mut bufmgr)?;
     for i in 1u32..=NUM_PAIRS {
