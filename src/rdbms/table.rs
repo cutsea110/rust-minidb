@@ -4,7 +4,7 @@ use super::btree::BTree;
 use super::util::tuple;
 use crate::accessor::method::AccessMethod;
 use crate::buffer::manager::BufferPoolManager;
-use crate::sql::ddl::table::{Table, UniqueIndex};
+use crate::sql::ddl::table::{Table as ITable, UniqueIndex as IUniqueIndex};
 use crate::storage::entity::PageId;
 
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub struct SimpleTable {
     pub num_key_elems: usize,
 }
 
-impl<T: BufferPoolManager> Table<T> for SimpleTable {
+impl<T: BufferPoolManager> ITable<T> for SimpleTable {
     fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
@@ -32,13 +32,13 @@ impl<T: BufferPoolManager> Table<T> for SimpleTable {
 }
 
 #[derive(Debug)]
-pub struct UIdxTable {
+pub struct Table {
     pub meta_page_id: PageId,
     pub num_key_elems: usize,
-    pub unique_indices: Vec<UIndex>,
+    pub unique_indices: Vec<self::UniqueIndex>,
 }
 
-impl<T: BufferPoolManager> Table<T> for UIdxTable {
+impl<T: BufferPoolManager> ITable<T> for self::Table {
     fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;
@@ -63,12 +63,12 @@ impl<T: BufferPoolManager> Table<T> for UIdxTable {
 }
 
 #[derive(Debug)]
-pub struct UIndex {
+pub struct UniqueIndex {
     pub meta_page_id: PageId,
     pub skey: Vec<usize>,
 }
 
-impl<T: BufferPoolManager> UniqueIndex<T> for UIndex {
+impl<T: BufferPoolManager> IUniqueIndex<T> for UniqueIndex {
     fn create(&mut self, bufmgr: &mut T) -> Result<()> {
         let btree = BTree::create(bufmgr)?;
         self.meta_page_id = btree.meta_page_id;

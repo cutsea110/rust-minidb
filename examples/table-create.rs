@@ -1,13 +1,13 @@
 use anyhow::Result;
 
 use minidb::buffer::manager::BufferPoolManager;
-use minidb::sql::ddl::table::Table;
+use minidb::sql::ddl::table::Table as ITable;
 use minidb::storage::entity::PageId;
 
 use minidb::rdbms::{
     clocksweep::{BufferPool, ClockSweepManager},
     disk::DiskManager,
-    table::{UIdxTable, UIndex},
+    table::{Table, UniqueIndex},
 };
 
 fn main() -> Result<()> {
@@ -15,10 +15,10 @@ fn main() -> Result<()> {
     let pool = BufferPool::new(10);
     let mut bufmgr = ClockSweepManager::new(disk, pool);
 
-    let mut table = UIdxTable {
+    let mut table = Table {
         meta_page_id: PageId(0),
         num_key_elems: 1,
-        unique_indices: vec![UIndex {
+        unique_indices: vec![UniqueIndex {
             meta_page_id: PageId::INVALID_PAGE_ID,
             skey: vec![2], // last_name
         }],
