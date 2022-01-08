@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use super::util::tuple;
-use crate::accessor::method::{AccessMethod, Iterable};
+use crate::accessor::method::{AccessMethod, HaveAccessMethod, Iterable};
 use crate::buffer::manager::BufferPoolManager;
 use crate::sql::dml::{entity::Tuple, query::*};
 use crate::storage::entity::PageId;
@@ -32,6 +32,17 @@ pub struct SeqScan<'a> {
     pub table_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
+}
+
+impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a> {
+    type Iter = btree::Iter;
+    type SearchOption = SearchMode;
+
+    fn accessor(
+        &mut self,
+    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+        Box::new(BTree::new(self.table_meta_page_id))
+    }
 }
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for SeqScan<'a> {
@@ -72,6 +83,17 @@ pub struct Filter<'a, T: BufferPoolManager> {
     pub cond: &'a dyn Fn(TupleSlice) -> bool,
 }
 
+impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for Filter<'a, T> {
+    type Iter = btree::Iter;
+    type SearchOption = SearchMode;
+
+    fn accessor(
+        &mut self,
+    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+        panic!("No need")
+    }
+}
+
 impl<'a, T: BufferPoolManager> PlanNode<T> for Filter<'a, T> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
         let inner_iter = self.inner_plan.start(bufmgr)?;
@@ -107,6 +129,17 @@ pub struct IndexScan<'a> {
     pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
+}
+
+impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a> {
+    type Iter = btree::Iter;
+    type SearchOption = SearchMode;
+
+    fn accessor(
+        &mut self,
+    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+        Box::new(BTree::new(self.index_meta_page_id))
+    }
 }
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for IndexScan<'a> {
@@ -154,6 +187,17 @@ pub struct IndexOnlyScan<'a> {
     pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
+}
+
+impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a> {
+    type Iter = btree::Iter;
+    type SearchOption = SearchMode;
+
+    fn accessor(
+        &mut self,
+    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+        Box::new(BTree::new(self.index_meta_page_id))
+    }
 }
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for IndexOnlyScan<'a> {

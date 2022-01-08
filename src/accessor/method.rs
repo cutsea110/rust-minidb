@@ -28,3 +28,11 @@ pub trait AccessMethod<T: BufferPoolManager> {
     ) -> Result<Self::Iterable, Error>;
     fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error>;
 }
+
+pub trait HaveAccessMethod<T: BufferPoolManager> {
+    type Iter: Iterable<T>;
+    type SearchOption: SearchOption;
+    fn accessor(
+        &mut self,
+    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>>;
+}
