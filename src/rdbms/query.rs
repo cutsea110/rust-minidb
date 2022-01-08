@@ -29,6 +29,7 @@ impl<'a> TupleSearchMode<'a> {
 }
 
 pub struct SeqScan<'a> {
+    pub table_accessor: BTree,
     pub table_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
@@ -39,7 +40,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a> {
     type SearchOption = SearchMode;
 
     fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
-        Some(Box::new(BTree::new(self.table_meta_page_id)))
+        Some(Box::new(&self.table_accessor))
     }
     fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
         None
@@ -129,7 +130,9 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecFilter<'a, T> {
 }
 
 pub struct IndexScan<'a> {
+    pub table_accessor: BTree,
     pub table_meta_page_id: PageId,
+    pub index_accessor: BTree,
     pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
@@ -140,10 +143,10 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a> {
     type SearchOption = SearchMode;
 
     fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
-        Some(Box::new(BTree::new(self.table_meta_page_id)))
+        Some(Box::new(&self.table_accessor))
     }
     fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
-        Some(Box::new(BTree::new(self.index_meta_page_id)))
+        Some(Box::new(&self.index_accessor))
     }
 }
 
@@ -191,6 +194,7 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecIndexScan<'a> {
 }
 
 pub struct IndexOnlyScan<'a> {
+    pub index_accessor: BTree,
     pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
@@ -204,7 +208,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a> {
         None
     }
     fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
-        Some(Box::new(BTree::new(self.index_meta_page_id)))
+        Some(Box::new(&self.index_accessor))
     }
 }
 
