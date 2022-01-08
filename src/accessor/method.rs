@@ -35,5 +35,6 @@ pub trait HaveAccessMethod<T: BufferPoolManager> {
     type Iter: Iterable<T>;
     type SearchOption: SearchOption;
 
-    fn accessor(&self) -> BoxedAccessMethod<T, Self::Iter, Self::SearchOption>;
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>>;
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>>;
 }

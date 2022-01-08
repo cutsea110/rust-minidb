@@ -38,14 +38,20 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
-        Box::new(BTree::new(self.table_meta_page_id))
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        Some(Box::new(BTree::new(self.table_meta_page_id)))
+    }
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        None
     }
 }
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for SeqScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
-        let table_iter = self.accessor().search(bufmgr, self.search_mode.encode())?;
+        let table_iter = self
+            .table_accessor()
+            .unwrap()
+            .search(bufmgr, self.search_mode.encode())?;
         Ok(Box::new(ExecSeqScan {
             table_iter,
             while_cond: self.while_cond,
@@ -84,8 +90,11 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for Filter<'a, T> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
-        panic!("No need")
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        None
+    }
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        None
     }
 }
 
@@ -130,15 +139,21 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
-        Box::new(BTree::new(self.index_meta_page_id))
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        Some(Box::new(BTree::new(self.table_meta_page_id)))
+    }
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        Some(Box::new(BTree::new(self.index_meta_page_id)))
     }
 }
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for IndexScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
         let table_btree = BTree::new(self.table_meta_page_id);
-        let index_iter = self.accessor().search(bufmgr, self.search_mode.encode())?;
+        let index_iter = self
+            .index_accessor()
+            .unwrap()
+            .search(bufmgr, self.search_mode.encode())?;
         Ok(Box::new(ExecIndexScan {
             table_btree,
             index_iter,
@@ -185,14 +200,20 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
-        Box::new(BTree::new(self.index_meta_page_id))
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        None
+    }
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+        Some(Box::new(BTree::new(self.index_meta_page_id)))
     }
 }
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for IndexOnlyScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
-        let index_iter = self.accessor().search(bufmgr, self.search_mode.encode())?;
+        let index_iter = self
+            .index_accessor()
+            .unwrap()
+            .search(bufmgr, self.search_mode.encode())?;
         Ok(Box::new(ExecIndexOnlyScan {
             index_iter,
             while_cond: self.while_cond,
