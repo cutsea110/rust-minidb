@@ -28,23 +28,22 @@ impl<'a> TupleSearchMode<'a> {
     }
 }
 
-pub struct SeqScan<'a, T: BufferPoolManager> {
-    pub accessor: BoxedAccessMethod<T, btree::Iter, SearchMode>,
+pub struct SeqScan<'a> {
     pub table_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
 }
 
-impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a, T> {
+impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&mut self) -> &mut BoxedAccessMethod<T, btree::Iter, SearchMode> {
-        &mut self.accessor
+    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
+        Box::new(BTree::new(self.table_meta_page_id))
     }
 }
 
-impl<'a, T: BufferPoolManager> PlanNode<T> for SeqScan<'a, T> {
+impl<'a, T: BufferPoolManager> PlanNode<T> for SeqScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
         let btree = BTree::new(self.table_meta_page_id);
         let table_iter = btree.search(bufmgr, self.search_mode.encode())?;
@@ -86,7 +85,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for Filter<'a, T> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&mut self) -> &mut BoxedAccessMethod<T, btree::Iter, SearchMode> {
+    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
         panic!("No need")
     }
 }
@@ -121,24 +120,23 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecFilter<'a, T> {
     }
 }
 
-pub struct IndexScan<'a, T: BufferPoolManager> {
-    pub accessor: BoxedAccessMethod<T, btree::Iter, SearchMode>,
+pub struct IndexScan<'a> {
     pub table_meta_page_id: PageId,
     pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
 }
 
-impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a, T> {
+impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&mut self) -> &mut BoxedAccessMethod<T, btree::Iter, SearchMode> {
-        &mut self.accessor
+    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
+        Box::new(BTree::new(self.index_meta_page_id))
     }
 }
 
-impl<'a, T: BufferPoolManager> PlanNode<T> for IndexScan<'a, T> {
+impl<'a, T: BufferPoolManager> PlanNode<T> for IndexScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
         let table_btree = BTree::new(self.table_meta_page_id);
         let index_btree = BTree::new(self.index_meta_page_id);
@@ -179,23 +177,22 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecIndexScan<'a> {
     }
 }
 
-pub struct IndexOnlyScan<'a, T: BufferPoolManager> {
-    pub accessor: BoxedAccessMethod<T, btree::Iter, SearchMode>,
+pub struct IndexOnlyScan<'a> {
     pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
 }
 
-impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a, T> {
+impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(&mut self) -> &mut BoxedAccessMethod<T, btree::Iter, SearchMode> {
-        &mut self.accessor
+    fn accessor(&self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
+        Box::new(BTree::new(self.index_meta_page_id))
     }
 }
 
-impl<'a, T: BufferPoolManager> PlanNode<T> for IndexOnlyScan<'a, T> {
+impl<'a, T: BufferPoolManager> PlanNode<T> for IndexOnlyScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
         let btree = BTree::new(self.index_meta_page_id);
         let index_iter = btree.search(bufmgr, self.search_mode.encode())?;
