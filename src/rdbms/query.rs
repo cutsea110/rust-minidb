@@ -45,8 +45,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a> {
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for SeqScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
-        let btree = BTree::new(self.table_meta_page_id);
-        let table_iter = btree.search(bufmgr, self.search_mode.encode())?;
+        let table_iter = self.accessor().search(bufmgr, self.search_mode.encode())?;
         Ok(Box::new(ExecSeqScan {
             table_iter,
             while_cond: self.while_cond,
@@ -77,7 +76,7 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecSeqScan<'a> {
 }
 
 pub struct Filter<'a, T: BufferPoolManager> {
-    pub inner_plan: &'a dyn PlanNode<T>,
+    pub inner_plan: &'a dyn PlanNode<T, Iter = btree::Iter, SearchOption = SearchMode>,
     pub cond: &'a dyn Fn(TupleSlice) -> bool,
 }
 
@@ -139,8 +138,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a> {
 impl<'a, T: BufferPoolManager> PlanNode<T> for IndexScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
         let table_btree = BTree::new(self.table_meta_page_id);
-        let index_btree = BTree::new(self.index_meta_page_id);
-        let index_iter = index_btree.search(bufmgr, self.search_mode.encode())?;
+        let index_iter = self.accessor().search(bufmgr, self.search_mode.encode())?;
         Ok(Box::new(ExecIndexScan {
             table_btree,
             index_iter,
@@ -194,8 +192,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a> {
 
 impl<'a, T: BufferPoolManager> PlanNode<T> for IndexOnlyScan<'a> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
-        let btree = BTree::new(self.index_meta_page_id);
-        let index_iter = btree.search(bufmgr, self.search_mode.encode())?;
+        let index_iter = self.accessor().search(bufmgr, self.search_mode.encode())?;
         Ok(Box::new(ExecIndexOnlyScan {
             index_iter,
             while_cond: self.while_cond,

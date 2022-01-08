@@ -34,5 +34,6 @@ pub type BoxedAccessMethod<T, U, V> = Box<dyn AccessMethod<T, Iterable = U, Sear
 pub trait HaveAccessMethod<T: BufferPoolManager> {
     type Iter: Iterable<T>;
     type SearchOption: SearchOption;
+
     fn accessor(&self) -> BoxedAccessMethod<T, Self::Iter, Self::SearchOption>;
 }
