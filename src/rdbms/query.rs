@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use super::util::tuple;
-use crate::accessor::method::{AccessMethod, HaveAccessMethod, Iterable};
+use crate::accessor::method::{AccessMethod, BoxedAccessMethod, HaveAccessMethod, Iterable};
 use crate::buffer::manager::BufferPoolManager;
 use crate::sql::dml::{entity::Tuple, query::*};
 use crate::storage::entity::PageId;
@@ -38,9 +38,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(
-        &mut self,
-    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+    fn accessor(&mut self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
         Box::new(BTree::new(self.table_meta_page_id))
     }
 }
@@ -87,9 +85,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for Filter<'a, T> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(
-        &mut self,
-    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+    fn accessor(&mut self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
         panic!("No need")
     }
 }
@@ -135,9 +131,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(
-        &mut self,
-    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+    fn accessor(&mut self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
         Box::new(BTree::new(self.index_meta_page_id))
     }
 }
@@ -193,9 +187,7 @@ impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a> {
     type Iter = btree::Iter;
     type SearchOption = SearchMode;
 
-    fn accessor(
-        &mut self,
-    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>> {
+    fn accessor(&mut self) -> BoxedAccessMethod<T, btree::Iter, SearchMode> {
         Box::new(BTree::new(self.index_meta_page_id))
     }
 }
