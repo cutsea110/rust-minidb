@@ -36,5 +36,5 @@ pub trait HaveAccessMethod<T: BufferPoolManager> {
     type SearchOption: SearchOption;
     fn accessor(
         &mut self,
-    ) -> Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>>;
+    ) -> &mut Box<dyn AccessMethod<T, Iterable = Self::Iter, SearchOption = Self::SearchOption>>;
 }

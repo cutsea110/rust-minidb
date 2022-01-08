@@ -1,5 +1,6 @@
 use anyhow::Result;
 
+use minidb::rdbms::btree::BTree;
 use minidb::sql::dml::query::PlanNode;
 use minidb::storage::entity::PageId;
 
@@ -8,8 +9,10 @@ use minidb::rdbms::{clocksweep::ClockSweepManager, disk::DiskManager, query::*, 
 fn main() -> Result<()> {
     let disk = DiskManager::open("table_large.rly")?;
     let mut bufmgr = ClockSweepManager::new(disk, 10);
+    let btree = BTree::new(PageId(2));
 
     let plan = IndexScan {
+        accessor: Box::new(btree),
         table_meta_page_id: PageId(0),
         index_meta_page_id: PageId(2),
         search_mode: TupleSearchMode::Key(&[b"Smith"]),
