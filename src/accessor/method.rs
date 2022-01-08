@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use thiserror::Error;
 
 use crate::buffer::manager::{self, BufferPoolManager};
@@ -21,6 +23,7 @@ pub trait AccessMethod<T: BufferPoolManager> {
     type Iterable: Iterable<T>;
     type SearchOption: SearchOption;
 
+    fn as_any(&self) -> &dyn Any;
     fn search(
         &self,
         bufmgr: &mut T,

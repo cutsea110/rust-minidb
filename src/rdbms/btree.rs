@@ -200,6 +200,10 @@ impl<T: BufferPoolManager> AccessMethod<T> for BTree {
     type Iterable = Iter;
     type SearchOption = SearchMode;
 
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn search(
         &self,
         bufmgr: &mut T,
