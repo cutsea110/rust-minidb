@@ -194,17 +194,12 @@ impl BTree {
 
 impl<T: BufferPoolManager> AccessMethod<T> for BTree {
     type Iterable = Iter;
-    type SearchOption = SearchMode;
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 
-    fn search(
-        &self,
-        bufmgr: &mut T,
-        search_option: Self::SearchOption,
-    ) -> Result<Self::Iterable, Error> {
+    fn search(&self, bufmgr: &mut T, search_option: SearchMode) -> Result<Self::Iterable, Error> {
         let root_page = self.fetch_root_page(bufmgr)?;
         self.search_internal(bufmgr, root_page, search_option)
     }

@@ -40,12 +40,11 @@ pub struct SeqScan<'a> {
 
 impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for SeqScan<'a> {
     type Iter = btree::Iter;
-    type SearchOption = SearchMode;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         Some(Box::new(&self.table_accessor))
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         None
     }
 }
@@ -86,18 +85,17 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecSeqScan<'a> {
 }
 
 pub struct Filter<'a, T: BufferPoolManager> {
-    pub inner_plan: &'a dyn PlanNode<T, Iter = btree::Iter, SearchOption = SearchMode>,
+    pub inner_plan: &'a dyn PlanNode<T, Iter = btree::Iter>,
     pub cond: &'a dyn Fn(TupleSlice) -> bool,
 }
 
 impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for Filter<'a, T> {
     type Iter = btree::Iter;
-    type SearchOption = SearchMode;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         None
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         None
     }
 }
@@ -143,12 +141,11 @@ pub struct IndexScan<'a> {
 
 impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexScan<'a> {
     type Iter = btree::Iter;
-    type SearchOption = SearchMode;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         Some(Box::new(&self.table_accessor))
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         Some(Box::new(&self.index_accessor))
     }
 }
@@ -205,12 +202,11 @@ pub struct IndexOnlyScan<'a> {
 
 impl<'a, T: BufferPoolManager> HaveAccessMethod<T> for IndexOnlyScan<'a> {
     type Iter = btree::Iter;
-    type SearchOption = SearchMode;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         None
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>> {
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
         Some(Box::new(&self.index_accessor))
     }
 }

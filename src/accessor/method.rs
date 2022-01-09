@@ -18,30 +18,19 @@ pub trait Iterable<T: BufferPoolManager> {
     fn next(&mut self, bufmgr: &mut T) -> Result<Option<Self::Item>, Error>;
 }
 
-pub trait SearchOption {}
-
 pub trait AccessMethod<T: BufferPoolManager> {
     type Iterable: Iterable<T>;
-    type SearchOption: SearchOption;
 
     fn as_any(&self) -> &dyn Any;
-    fn search(
-        &self,
-        bufmgr: &mut T,
-        search_option: Self::SearchOption,
-    ) -> Result<Self::Iterable, Error>;
+    fn search(&self, bufmgr: &mut T, search_option: SearchMode) -> Result<Self::Iterable, Error>;
     fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error>;
 }
 
-pub type BoxedAccessMethod<'a, T, U, V> =
-    Box<&'a dyn AccessMethod<T, Iterable = U, SearchOption = V>>;
+pub type BoxedAccessMethod<'a, T, U> = Box<&'a dyn AccessMethod<T, Iterable = U>>;
 
 pub trait HaveAccessMethod<T: BufferPoolManager> {
     type Iter: Iterable<T>;
-    type SearchOption: SearchOption;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>>;
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>>;
+    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>>;
+    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>>;
 }
-
-impl SearchOption for SearchMode {}
