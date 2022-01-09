@@ -7,7 +7,10 @@ use serde::{Deserialize, Serialize};
 
 use zerocopy::{AsBytes, ByteSlice};
 
-use crate::accessor::method::{AccessMethod, Error, Iterable, SearchOption};
+use crate::accessor::{
+    entity::SearchMode,
+    method::{AccessMethod, Error, Iterable},
+};
 use crate::buffer::{entity::Buffer, manager::BufferPoolManager};
 use crate::storage::entity::PageId;
 
@@ -34,29 +37,22 @@ impl<'a> Pair<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum SearchMode {
-    Start,
-    Key(Vec<u8>),
-}
-
-impl SearchMode {
-    fn child_page_id(&self, branch: &branch::Branch<impl ByteSlice>) -> PageId {
-        match self {
-            SearchMode::Start => branch.child_at(0),
-            SearchMode::Key(key) => branch.search_child(key),
-        }
-    }
-
-    fn tuple_slot_id(&self, leaf: &leaf::Leaf<impl ByteSlice>) -> Result<usize, usize> {
-        match self {
-            SearchMode::Start => Err(0),
-            SearchMode::Key(key) => leaf.search_slot_id(key),
-        }
+fn child_page_id(search_mode: &SearchMode, branch: &branch::Branch<impl ByteSlice>) -> PageId {
+    match search_mode {
+        SearchMode::Start => branch.child_at(0),
+        SearchMode::Key(key) => branch.search_child(key),
     }
 }
 
-impl SearchOption for SearchMode {}
+fn tuple_slot_id(
+    search_mode: &SearchMode,
+    leaf: &leaf::Leaf<impl ByteSlice>,
+) -> Result<usize, usize> {
+    match search_mode {
+        SearchMode::Start => Err(0),
+        SearchMode::Key(key) => leaf.search_slot_id(key),
+    }
+}
 
 pub struct BTree {
     pub meta_page_id: PageId,
@@ -97,7 +93,7 @@ impl BTree {
         let node = node::Node::new(node_buffer.page.borrow() as Ref<[_]>);
         match node::Body::new(node.header.node_type, node.body.as_bytes()) {
             node::Body::Leaf(leaf) => {
-                let slot_id = search_mode.tuple_slot_id(&leaf).unwrap_or_else(identity);
+                let slot_id = tuple_slot_id(&search_mode, &leaf).unwrap_or_else(identity);
                 drop(node);
                 Ok(Iter {
                     buffer: node_buffer,
@@ -105,7 +101,7 @@ impl BTree {
                 })
             }
             node::Body::Branch(branch) => {
-                let child_page_id = search_mode.child_page_id(&branch);
+                let child_page_id = child_page_id(&search_mode, &branch);
                 drop(node);
                 drop(node_buffer);
                 let child_node_page = bufmgr.fetch_page(child_page_id)?;

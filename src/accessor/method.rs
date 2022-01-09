@@ -2,6 +2,7 @@ use std::any::Any;
 
 use thiserror::Error;
 
+use super::entity::SearchMode;
 use crate::buffer::manager::{self, BufferPoolManager};
 
 #[derive(Debug, Error)]
@@ -42,3 +43,5 @@ pub trait HaveAccessMethod<T: BufferPoolManager> {
     fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>>;
     fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter, Self::SearchOption>>;
 }
+
+impl SearchOption for SearchMode {}

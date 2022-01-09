@@ -1,13 +1,12 @@
 use anyhow::Result;
 
-use minidb::accessor::method::{AccessMethod, Iterable};
+use minidb::accessor::{
+    entity::SearchMode,
+    method::{AccessMethod, Iterable},
+};
 use minidb::storage::entity::PageId;
 
-use minidb::rdbms::{
-    btree::{BTree, SearchMode},
-    clocksweep::ClockSweepManager,
-    disk::DiskManager,
-};
+use minidb::rdbms::{btree::BTree, clocksweep::ClockSweepManager, disk::DiskManager};
 
 fn main() -> Result<()> {
     let disk = DiskManager::open("large.btr")?;

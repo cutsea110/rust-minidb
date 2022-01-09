@@ -1,12 +1,15 @@
 use anyhow::Result;
 
 use super::util::tuple;
-use crate::accessor::method::{AccessMethod, BoxedAccessMethod, HaveAccessMethod, Iterable};
+use crate::accessor::{
+    entity::SearchMode,
+    method::{AccessMethod, BoxedAccessMethod, HaveAccessMethod, Iterable},
+};
 use crate::buffer::manager::BufferPoolManager;
 use crate::sql::dml::{entity::Tuple, query::*};
 use crate::storage::entity::PageId;
 
-use super::btree::{self, BTree, SearchMode};
+use super::btree::{self, BTree};
 
 pub type TupleSlice<'a> = &'a [Vec<u8>];
 
