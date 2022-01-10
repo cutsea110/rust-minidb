@@ -305,20 +305,38 @@ mod tests {
     #[test]
     fn seq_scan_test() {
         let mut bufmgr = Empty {};
-        let plan = SeqScan {
-            table_accessor: &Generate {},
-            search_mode: TupleSearchMode::Start,
-            while_cond: &|_| true,
-        };
-        let mut exec = plan.start(&mut bufmgr).unwrap();
+        {
+            let plan = SeqScan {
+                table_accessor: &Generate {},
+                search_mode: TupleSearchMode::Start,
+                while_cond: &|_| true,
+            };
+            let mut exec = plan.start(&mut bufmgr).unwrap();
 
-        let res1 = exec.next(&mut bufmgr);
-        let first = res1.unwrap().unwrap();
-        assert_eq!(first, vec![&[0], &[0]]);
+            let res1 = exec.next(&mut bufmgr);
+            let first = res1.unwrap().unwrap();
+            assert_eq!(first, vec![&[0], &[0]]);
 
-        let res2 = exec.next(&mut bufmgr);
-        let second = res2.unwrap().unwrap();
-        assert_eq!(second, vec![&[1], &[1]]);
+            let res2 = exec.next(&mut bufmgr);
+            let second = res2.unwrap().unwrap();
+            assert_eq!(second, vec![&[1], &[1]]);
+        }
+        {
+            let plan = SeqScan {
+                table_accessor: &Generate {},
+                search_mode: TupleSearchMode::Key(&[&[42u8]]),
+                while_cond: &|_| true,
+            };
+            let mut exec = plan.start(&mut bufmgr).unwrap();
+
+            let res1 = exec.next(&mut bufmgr);
+            let first = res1.unwrap().unwrap();
+            assert_eq!(first, vec![&[42], &[42]]);
+
+            let res2 = exec.next(&mut bufmgr);
+            let second = res2.unwrap().unwrap();
+            assert_eq!(second, vec![&[43], &[43]]);
+        }
     }
     #[test]
     fn filter_test() {
