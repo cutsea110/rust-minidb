@@ -356,7 +356,50 @@ mod tests {
     }
     #[test]
     fn filter_test() {
-        // TODO
+        let mut bufmgr = Empty {};
+        {
+            let is_odd = |n: u8| n % 2 == 1;
+            let plan = Filter {
+                cond: &|record| is_odd(record[1].as_slice()[0]),
+                inner_plan: &SeqScan {
+                    table_accessor: &Generate {},
+                    search_mode: TupleSearchMode::Start,
+                    while_cond: &|_| true,
+                },
+            };
+            let mut exec = plan.start(&mut bufmgr).unwrap();
+
+            let res1 = exec.next(&mut bufmgr);
+            let first = res1.unwrap().unwrap();
+            assert_eq!(first, vec![&[1], &[1]]);
+
+            let res2 = exec.next(&mut bufmgr);
+            let second = res2.unwrap().unwrap();
+            assert_eq!(second, vec![&[3], &[3]]);
+        }
+        {
+            let plan = Filter {
+                cond: &|record| record[1].as_slice() < &[44u8],
+                inner_plan: &SeqScan {
+                    table_accessor: &Generate {},
+                    search_mode: TupleSearchMode::Key(&[&[42u8]]),
+                    while_cond: &|_| true,
+                },
+            };
+            let mut exec = plan.start(&mut bufmgr).unwrap();
+
+            let res1 = exec.next(&mut bufmgr);
+            let first = res1.unwrap().unwrap();
+            assert_eq!(first, vec![&[42], &[42]]);
+
+            let res2 = exec.next(&mut bufmgr);
+            let second = res2.unwrap().unwrap();
+            assert_eq!(second, vec![&[43], &[43]]);
+
+            let res3 = exec.next(&mut bufmgr);
+            let nodata = res3.unwrap();
+            assert!(nodata.is_none());
+        }
     }
     #[test]
     fn index_scan_test() {
