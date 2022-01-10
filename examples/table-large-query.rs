@@ -9,14 +9,12 @@ use minidb::rdbms::{clocksweep::ClockSweepManager, disk::DiskManager, query::*, 
 fn main() -> Result<()> {
     let disk = DiskManager::open("table_large.rly")?;
     let mut bufmgr = ClockSweepManager::new(disk, 10);
-    let table_accessor = BTree::new(PageId(0));
-    let index_accessor = BTree::new(PageId(2));
+    let table_accessor = &BTree::new(PageId(0));
+    let index_accessor = &BTree::new(PageId(2));
 
     let plan = IndexScan {
-        table_accessor: &table_accessor,
-        table_meta_page_id: PageId(0),
-        index_accessor: &index_accessor,
-        index_meta_page_id: PageId(2),
+        table_accessor,
+        index_accessor,
         search_mode: TupleSearchMode::Key(&[b"Smith"]),
         while_cond: &|skey| skey[0].as_slice() == b"Smith",
     };

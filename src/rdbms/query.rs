@@ -7,7 +7,6 @@ use crate::accessor::{
 };
 use crate::buffer::manager::BufferPoolManager;
 use crate::sql::dml::{entity::Tuple, query::*};
-use crate::storage::entity::PageId;
 
 pub type TupleSlice<'a> = &'a [Vec<u8>];
 
@@ -31,7 +30,6 @@ impl<'a> TupleSearchMode<'a> {
 
 pub struct SeqScan<'a, T: BufferPoolManager, U: Iterable<T>> {
     pub table_accessor: &'a dyn AccessMethod<T, Iterable = U>,
-    pub table_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
 }
@@ -130,9 +128,7 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecFilter<'a, T> {
 
 pub struct IndexScan<'a, T: BufferPoolManager, U: Iterable<T>> {
     pub table_accessor: &'a dyn AccessMethod<T, Iterable = U>,
-    pub table_meta_page_id: PageId,
     pub index_accessor: &'a dyn AccessMethod<T, Iterable = U>,
-    pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
 }
@@ -193,7 +189,6 @@ impl<'a, T: BufferPoolManager, U: Iterable<T>> Executor<T> for ExecIndexScan<'a,
 
 pub struct IndexOnlyScan<'a, T: BufferPoolManager, U: Iterable<T>> {
     pub index_accessor: &'a dyn AccessMethod<T, Iterable = U>,
-    pub index_meta_page_id: PageId,
     pub search_mode: TupleSearchMode<'a>,
     pub while_cond: &'a dyn Fn(TupleSlice) -> bool,
 }
