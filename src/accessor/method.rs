@@ -14,8 +14,7 @@ pub enum Error {
 }
 
 pub trait Iterable<T: BufferPoolManager> {
-    type Item;
-    fn next(&mut self, bufmgr: &mut T) -> Result<Option<Self::Item>, Error>;
+    fn next(&mut self, bufmgr: &mut T) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error>;
 }
 
 pub trait AccessMethod<T: BufferPoolManager> {
