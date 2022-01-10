@@ -25,11 +25,9 @@ pub trait AccessMethod<T: BufferPoolManager> {
     fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error>;
 }
 
-pub type BoxedAccessMethod<'a, T, U> = Box<&'a dyn AccessMethod<T, Iterable = U>>;
-
 pub trait HaveAccessMethod<T: BufferPoolManager> {
     type Iter: Iterable<T>;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>>;
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>>;
+    fn table_accessor(&self) -> Option<Box<&dyn AccessMethod<T, Iterable = Self::Iter>>>;
+    fn index_accessor(&self) -> Option<Box<&dyn AccessMethod<T, Iterable = Self::Iter>>>;
 }

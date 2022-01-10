@@ -3,7 +3,7 @@ use anyhow::Result;
 use super::util::tuple;
 use crate::accessor::{
     entity::SearchMode,
-    method::{AccessMethod, BoxedAccessMethod, HaveAccessMethod, Iterable},
+    method::{AccessMethod, HaveAccessMethod, Iterable},
 };
 use crate::buffer::manager::BufferPoolManager;
 use crate::sql::dml::{entity::Tuple, query::*};
@@ -37,10 +37,10 @@ pub struct SeqScan<'a, T: BufferPoolManager, U: Iterable<T>> {
 impl<'a, T: BufferPoolManager, U: Iterable<T>> HaveAccessMethod<T> for SeqScan<'a, T, U> {
     type Iter = U;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn table_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         Some(Box::new(self.table_accessor))
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn index_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         None
     }
 }
@@ -88,10 +88,10 @@ pub struct Filter<'a, T: BufferPoolManager, U: Iterable<T>> {
 impl<'a, T: BufferPoolManager, U: Iterable<T>> HaveAccessMethod<T> for Filter<'a, T, U> {
     type Iter = U;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn table_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         None
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn index_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         None
     }
 }
@@ -136,10 +136,10 @@ pub struct IndexScan<'a, T: BufferPoolManager, U: Iterable<T>> {
 impl<'a, T: BufferPoolManager, U: Iterable<T>> HaveAccessMethod<T> for IndexScan<'a, T, U> {
     type Iter = U;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn table_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         Some(Box::new(self.table_accessor))
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn index_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         Some(Box::new(self.index_accessor))
     }
 }
@@ -196,10 +196,10 @@ pub struct IndexOnlyScan<'a, T: BufferPoolManager, U: Iterable<T>> {
 impl<'a, T: BufferPoolManager, U: Iterable<T>> HaveAccessMethod<T> for IndexOnlyScan<'a, T, U> {
     type Iter = U;
 
-    fn table_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn table_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         None
     }
-    fn index_accessor(&self) -> Option<BoxedAccessMethod<T, Self::Iter>> {
+    fn index_accessor(&self) -> Option<Box<&'a dyn AccessMethod<T, Iterable = Self::Iter>>> {
         Some(Box::new(self.index_accessor))
     }
 }
