@@ -284,8 +284,8 @@ mod tests {
         }
     }
 
-    struct Dup {}
-    impl AccessMethod<Empty> for Dup {
+    struct Generate {}
+    impl AccessMethod<Empty> for Generate {
         type Iterable = Counter;
         fn search(
             &self,
@@ -306,7 +306,7 @@ mod tests {
     fn seq_scan_test() {
         let mut bufmgr = Empty {};
         let plan = SeqScan {
-            table_accessor: &Dup {},
+            table_accessor: &Generate {},
             search_mode: TupleSearchMode::Start,
             while_cond: &|_| true,
         };
