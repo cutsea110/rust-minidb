@@ -341,6 +341,18 @@ mod tests {
             let second = res2.unwrap().unwrap();
             assert_eq!(second, vec![&[43], &[43]]);
         }
+        {
+            let plan = SeqScan {
+                table_accessor: &Generate {},
+                search_mode: TupleSearchMode::Key(&[&[42u8]]),
+                while_cond: &|_| false,
+            };
+            let mut exec = plan.start(&mut bufmgr).unwrap();
+
+            let res1 = exec.next(&mut bufmgr);
+            let nodata = res1.unwrap();
+            assert!(nodata.is_none());
+        }
     }
     #[test]
     fn filter_test() {
