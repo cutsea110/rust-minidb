@@ -275,12 +275,16 @@ mod tests {
     impl Iterable<Empty> for Counter {
         fn next(&mut self, _: &mut Empty) -> Result<Option<(Vec<u8>, Vec<u8>)>, method::Error> {
             let c = self.next;
-            self.next += 1;
-            let mut key = vec![];
-            tuple::encode(vec![&[c]].iter(), &mut key);
-            let mut val = vec![];
-            tuple::encode(vec![&[c]].iter(), &mut val);
-            Ok(Some((key, val)))
+            if c == u8::MAX {
+                return Ok(None);
+            } else {
+                self.next += 1;
+                let mut key = vec![];
+                tuple::encode(vec![&[c]].iter(), &mut key);
+                let mut val = vec![];
+                tuple::encode(vec![&[c]].iter(), &mut val);
+                Ok(Some((key, val)))
+            }
         }
     }
 
