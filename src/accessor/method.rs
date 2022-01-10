@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use thiserror::Error;
 
 use super::entity::SearchMode;
@@ -20,7 +18,6 @@ pub trait Iterable<T: BufferPoolManager> {
 pub trait AccessMethod<T: BufferPoolManager> {
     type Iterable: Iterable<T>;
 
-    fn as_any(&self) -> &dyn Any;
     fn search(&self, bufmgr: &mut T, search_option: SearchMode) -> Result<Self::Iterable, Error>;
     fn insert(&self, bufmgr: &mut T, key: &[u8], value: &[u8]) -> Result<(), Error>;
 }
