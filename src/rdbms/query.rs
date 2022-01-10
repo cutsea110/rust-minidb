@@ -238,3 +238,98 @@ impl<'a, T: BufferPoolManager> Executor<T> for ExecIndexOnlyScan<'a, T> {
         Ok(Some(tuple))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::accessor::{entity::SearchMode, method};
+    use crate::buffer::{
+        entity::Buffer,
+        manager::{BufferPoolManager, Error},
+    };
+    use crate::storage::entity::PageId;
+    use std::rc::Rc;
+
+    struct Empty {}
+    impl BufferPoolManager for Empty {
+        fn fetch_page(&mut self, _: PageId) -> Result<Rc<Buffer>, Error> {
+            panic!("Not implement!")
+        }
+        fn create_page(&mut self) -> Result<Rc<Buffer>, Error> {
+            panic!("Not implement!")
+        }
+        fn flush(&mut self) -> Result<(), Error> {
+            panic!("Not implement!")
+        }
+    }
+
+    struct Counter {
+        next: u8,
+    }
+    impl Counter {
+        fn new(init: u8) -> Self {
+            Self { next: init }
+        }
+    }
+    impl Iterable<Empty> for Counter {
+        fn next(&mut self, _: &mut Empty) -> Result<Option<(Vec<u8>, Vec<u8>)>, method::Error> {
+            let c = self.next;
+            self.next += 1;
+            let mut key = vec![];
+            tuple::encode(vec![&[c]].iter(), &mut key);
+            let mut val = vec![];
+            tuple::encode(vec![&[c]].iter(), &mut val);
+            Ok(Some((key, val)))
+        }
+    }
+
+    struct Dup {}
+    impl AccessMethod<Empty> for Dup {
+        type Iterable = Counter;
+        fn search(
+            &self,
+            _: &mut Empty,
+            search_option: SearchMode,
+        ) -> Result<Self::Iterable, method::Error> {
+            match search_option {
+                SearchMode::Start => Ok(Counter::new(0)),
+                SearchMode::Key(n) => Ok(Counter::new(n[0])),
+            }
+        }
+        fn insert(&self, _: &mut Empty, _: &[u8], _: &[u8]) -> Result<(), method::Error> {
+            panic!("Not implement!")
+        }
+    }
+
+    #[test]
+    fn seq_scan_test() {
+        let mut bufmgr = Empty {};
+        let plan = SeqScan {
+            table_accessor: &Dup {},
+            search_mode: TupleSearchMode::Start,
+            while_cond: &|_| true,
+        };
+        let mut exec = plan.start(&mut bufmgr).unwrap();
+
+        let res1 = exec.next(&mut bufmgr);
+        let first = res1.unwrap().unwrap();
+        assert_eq!(first, vec![&[0], &[0]]);
+
+        let res2 = exec.next(&mut bufmgr);
+        let second = res2.unwrap().unwrap();
+        assert_eq!(second, vec![&[1], &[1]]);
+    }
+    #[test]
+    fn filter_test() {
+        // TODO
+    }
+    #[test]
+    fn index_scan_test() {
+        // TODO
+    }
+    #[test]
+    fn index_only_scan_test() {
+        // TODO
+    }
+}
