@@ -13,9 +13,9 @@ fn main() -> Result<()> {
     let index_accessor = BTree::new(PageId(2));
 
     let plan = IndexScan {
-        table_accessor,
+        table_accessor: &table_accessor,
         table_meta_page_id: PageId(0),
-        index_accessor,
+        index_accessor: &index_accessor,
         index_meta_page_id: PageId(2),
         search_mode: TupleSearchMode::Key(&[b"Smith"]),
         while_cond: &|skey| skey[0].as_slice() == b"Smith",

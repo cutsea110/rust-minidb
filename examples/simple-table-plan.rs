@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     let plan = Filter {
         cond: &|record| record[1].as_slice() < b"Dave",
         inner_plan: &SeqScan {
-            table_accessor,
+            table_accessor: &table_accessor,
             table_meta_page_id: PageId(0),
             search_mode: TupleSearchMode::Key(&[b"w"]),
             while_cond: &|pkey| pkey[0].as_slice() < b"z",
