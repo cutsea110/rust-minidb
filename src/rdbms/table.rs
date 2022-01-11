@@ -1,11 +1,12 @@
 use anyhow::Result;
 
-use super::btree::BTree;
 use super::util::tuple;
 use crate::accessor::method::AccessMethod;
 use crate::buffer::manager::BufferPoolManager;
 use crate::sql::ddl::table::{Table as ITable, UniqueIndex as IUniqueIndex};
 use crate::storage::entity::PageId;
+
+use super::btree::BTree;
 
 #[derive(Debug)]
 pub struct SimpleTable {

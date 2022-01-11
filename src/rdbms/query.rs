@@ -146,13 +146,13 @@ impl<'a, T: BufferPoolManager, U: Iterable<T>> HaveAccessMethod<T> for IndexScan
 
 impl<'a, T: BufferPoolManager, U: Iterable<T>> PlanNode<T> for IndexScan<'a, T, U> {
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>> {
-        let table_btree = *self.table_accessor().unwrap();
+        let table_accessor = *self.table_accessor().unwrap();
         let index_iter = self
             .index_accessor()
             .unwrap()
             .search(bufmgr, self.search_mode.encode())?;
         Ok(Box::new(ExecIndexScan {
-            table_btree,
+            table_accessor,
             index_iter,
             while_cond: self.while_cond,
         }))
@@ -160,7 +160,7 @@ impl<'a, T: BufferPoolManager, U: Iterable<T>> PlanNode<T> for IndexScan<'a, T, 
 }
 
 pub struct ExecIndexScan<'a, T: BufferPoolManager, U: Iterable<T>> {
-    table_btree: &'a dyn AccessMethod<T, Iterable = U>,
+    table_accessor: &'a dyn AccessMethod<T, Iterable = U>,
     index_iter: U,
     while_cond: &'a dyn Fn(TupleSlice) -> bool,
 }
@@ -177,7 +177,7 @@ impl<'a, T: BufferPoolManager, U: Iterable<T>> Executor<T> for ExecIndexScan<'a,
             return Ok(None);
         }
         let mut table_iter = self
-            .table_btree
+            .table_accessor
             .search(bufmgr, SearchMode::Key(pkey_bytes))?;
         let (pkey_bytes, tuple_bytes) = table_iter.next(bufmgr)?.unwrap();
         let mut tuple = vec![];
