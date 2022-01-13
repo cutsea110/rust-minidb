@@ -9,7 +9,7 @@ use minidb::rdbms::{
 };
 
 fn main() -> Result<()> {
-    // setup
+    // config
     let disk = DiskManager::open("sample-db.rly")?;
     let mut bufmgr = ClockSweepManager::new(disk, 10);
 
@@ -47,5 +47,6 @@ fn main() -> Result<()> {
     while let Some(record) = exec.next(&mut bufmgr)? {
         println!("{:?}", tuple::Pretty(&record));
     }
+
     Ok(())
 }
