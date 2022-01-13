@@ -10,7 +10,7 @@ use minidb::rdbms::{
 
 fn main() -> Result<()> {
     // setup
-    let disk = DiskManager::open("table.rly")?;
+    let disk = DiskManager::open("sample-db.rly")?;
     let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     let mut table = Table {
