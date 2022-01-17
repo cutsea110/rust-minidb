@@ -1,4 +1,5 @@
 use anyhow::Result;
+use std::path::Path;
 
 use minidb::buffer::manager::BufferPoolManager;
 use minidb::sql::{ddl::table::Table as ITable, dml::query::*};
@@ -8,9 +9,9 @@ use minidb::rdbms::{
     btree::*, clocksweep::ClockSweepManager, disk::DiskManager, query::*, table::*, util::tuple,
 };
 
-fn main() -> Result<()> {
+fn create(db_path: &str) -> Result<()> {
     // config
-    let disk = DiskManager::open("sample-db.rly")?;
+    let disk = DiskManager::open(db_path)?;
     let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     let mut table = Table {
@@ -32,6 +33,13 @@ fn main() -> Result<()> {
     table.insert(&mut bufmgr, &[b"v", b"Eve", b"Brown"])?;
 
     bufmgr.flush()?;
+    Ok(())
+}
+
+fn query(db_path: &str) -> Result<()> {
+    // config
+    let disk = DiskManager::open(db_path)?;
+    let mut bufmgr = ClockSweepManager::new(disk, 10);
 
     // query
     let table_accessor = &BTree::new(PageId(0));
@@ -47,6 +55,16 @@ fn main() -> Result<()> {
     while let Some(record) = exec.next(&mut bufmgr)? {
         println!("{:?}", tuple::Pretty(&record));
     }
+
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    let db_name = "sample-db.rly";
+    if !Path::new(db_name).exists() {
+        create(db_name)?;
+    }
+    query(db_name)?;
 
     Ok(())
 }
