@@ -13,7 +13,10 @@ pub enum Error {
 }
 
 pub trait BufferPoolManager {
+    // ページを取得する
     fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error>;
+    // 新たにページを生成する
     fn create_page(&mut self) -> Result<Rc<Buffer>, Error>;
+    // ストレージに書き出す
     fn flush(&mut self) -> Result<(), Error>;
 }

@@ -10,5 +10,6 @@ pub trait Executor<T: BufferPoolManager> {
 pub type BoxExecutor<'a, T> = Box<dyn Executor<T> + 'a>;
 
 pub trait PlanNode<T: BufferPoolManager>: HaveAccessMethod<T> {
+    // PLANNER から EXECUTER を生成
     fn start(&self, bufmgr: &mut T) -> Result<BoxExecutor<T>>;
 }
