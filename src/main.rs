@@ -33,6 +33,7 @@ fn create(db_path: &str) -> Result<()> {
     table.insert(&mut bufmgr, &[b"v", b"Eve", b"Brown"])?;
 
     bufmgr.flush()?;
+
     Ok(())
 }
 
